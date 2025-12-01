@@ -32,30 +32,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser) {
-                setUser(firebaseUser);
-                // Fetch user role from Firestore
-                const userDocRef = doc(db, "users", firebaseUser.uid);
-                const userDoc = await getDoc(userDocRef);
+            try {
+                if (firebaseUser) {
+                    setUser(firebaseUser);
+                    // Fetch user role from Firestore
+                    const userDocRef = doc(db, "users", firebaseUser.uid);
+                    const userDoc = await getDoc(userDocRef);
 
-                if (userDoc.exists()) {
-                    setRole(userDoc.data().role as UserRole);
+                    if (userDoc.exists()) {
+                        setRole(userDoc.data().role as UserRole);
+                    } else {
+                        // Create new user document with default role 'client'
+                        const defaultRole: UserRole = "client";
+                        await setDoc(userDocRef, {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            role: defaultRole,
+                            createdAt: new Date(),
+                        });
+                        setRole(defaultRole);
+                    }
                 } else {
-                    // Create new user document with default role 'client'
-                    const defaultRole: UserRole = "client";
-                    await setDoc(userDocRef, {
-                        uid: firebaseUser.uid,
-                        email: firebaseUser.email,
-                        role: defaultRole,
-                        createdAt: new Date(),
-                    });
-                    setRole(defaultRole);
+                    setUser(null);
+                    setRole(null);
                 }
-            } else {
-                setUser(null);
-                setRole(null);
+            } catch (error) {
+                console.error("Error in AuthContext:", error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         });
 
         return () => unsubscribe();

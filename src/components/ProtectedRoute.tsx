@@ -21,18 +21,20 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
             } else if (allowedRoles && role && !allowedRoles.includes(role)) {
                 // Redirect based on role if trying to access unauthorized page
                 if (role === "client") router.push("/client");
-                else if (role === "trading") router.push("/trading");
+                else if (role === "trader") router.push("/trading");
+                else if (role === "admin" || role === "supervisor") router.push("/admin");
                 else router.push("/");
             }
         }
+    }
     }, [user, role, loading, router, allowedRoles]);
 
-    if (loading) {
-        return <div className="flex min-h-screen items-center justify-center">Ładowanie...</div>;
-    }
+if (loading) {
+    return <div className="flex min-h-screen items-center justify-center">Ładowanie...</div>;
+}
 
-    if (!user) return null;
-    if (allowedRoles && role && !allowedRoles.includes(role)) return null;
+if (!user) return null;
+if (allowedRoles && role && !allowedRoles.includes(role)) return null;
 
-    return <>{children}</>;
+return <>{children}</>;
 }

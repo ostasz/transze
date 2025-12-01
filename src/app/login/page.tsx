@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [isRegistering, setIsRegistering] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
 
@@ -17,11 +16,7 @@ export default function LoginPage() {
         setError("");
 
         try {
-            if (isRegistering) {
-                await createUserWithEmailAndPassword(auth, email, password);
-            } else {
-                await signInWithEmailAndPassword(auth, email, password);
-            }
+            await signInWithEmailAndPassword(auth, email, password);
             router.push("/"); // Redirect to dashboard after login
         } catch (err: any) {
             setError(err.message);
@@ -33,7 +28,7 @@ export default function LoginPage() {
             <div className="w-full max-w-md space-y-8">
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
-                        {isRegistering ? "Zarejestruj się" : "Zaloguj się do Transze"}
+                        Zaloguj się do Transze
                     </h2>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -73,20 +68,10 @@ export default function LoginPage() {
                             type="submit"
                             className="group relative flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                         >
-                            {isRegistering ? "Zarejestruj się" : "Zaloguj się"}
+                            Zaloguj się
                         </button>
                     </div>
                 </form>
-                <div className="text-center">
-                    <button
-                        className="text-sm text-indigo-600 hover:text-indigo-500"
-                        onClick={() => setIsRegistering(!isRegistering)}
-                    >
-                        {isRegistering
-                            ? "Masz już konto? Zaloguj się"
-                            : "Nie masz konta? Zarejestruj się"}
-                    </button>
-                </div>
             </div>
         </div>
     );
