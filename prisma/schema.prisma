@@ -1,0 +1,317 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums based on requirements
+enum UserRole {
+  // Internal
+  ADMIN
+  BACKOFFICE
+  TRADER
+  RISK
+  
+  // Client
+  CLIENT_ADMIN
+  CLIENT_TRADER
+  CLIENT_VIEWER
+  
+  // Prospect
+  PROSPECT
+}
+
+enum OrganizationType {
+  INTERNAL
+  CLIENT
+}
+
+enum ProductProfile {
+  BASE
+  PEAK
+}
+
+enum ProductPeriod {
+  MONTH
+  QUARTER
+  YEAR
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  DRAFT
+  SUBMITTED
+  NEEDS_APPROVAL
+  APPROVED
+  IN_EXECUTION
+  PARTIALLY_FILLED
+  FILLED
+  EXPIRED
+  CANCELLED
+  REJECTED
+}
+
+// Core Models
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  nip       String?  @unique // Tax ID
+  type      OrganizationType @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  contract  Contract?
+  orders    Order[]
+  positions Position[]
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?   // Nullable for OAuth, but required for Credentials/Prospect
+  role          UserRole  @default(PROSPECT)
+  isActive      Boolean   @default(false) // Needs activation for clients
+  emailVerified DateTime?
+  
+  // Terms & Conditions
+  termsVersionAccepted Int?
+  lastTermsAcceptance  DateTime?
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  // Relations
+  ordersCreated Order[]       @relation("CreatedOrders")
+  auditLogs     AuditLog[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // NextAuth Adapter models (optional but good to have)
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Contract {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  
+  // Configuration
+  allowShort     Boolean      @default(false)
+  maxMWPerOrder  Float?
+  
+  // Allowed Products (Simplified: JSON or Relation. Using JSON for flexibility in MVP or Relation for strictness)
+  // For MVP, if we have specific products like "Y-26 BASE", we can link them.
+  // Alternatively, defining strict rules. Let's use a relation to 'Product' via a join table or implied via logic.
+  // Requirement: "dozwolone instrumenty (np. M+1 BASE, Q3-26 PEAK...)"
+  // Storing allowed product IDs or rules in JSON is flexible.
+  contractNumber String?  // Optional or Required? Let's make it optional for now or default?
+  
+  validFrom      DateTime?
+  validTo        DateTime?
+  isActive       Boolean      @default(true)
+
+  // Allowed Products
+  allowedProducts String[]    // Postgres supports string arrays natively
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Product {
+  id            String        @id @default(cuid())
+  symbol        String        @unique // "BASE_Y_26"
+  profile       ProductProfile
+  period        ProductPeriod
+  deliveryStart DateTime
+  deliveryEnd   DateTime
+  
+  quotes        Quote[]
+  orders        Order[]
+  positions     Position[]
+}
+
+model Quote {
+  id        String   @id @default(cuid())
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+  
+  // Or standalone symbol if product doesn't exist yet (e.g. CO2/Gas imported via CSV)
+  symbol    String 
+  market    String   // "TGE", "CO2", "GAS"
+  price     Float
+  currency  String   @default("PLN")
+  timestamp DateTime
+  
+  createdAt DateTime @default(now())
+  
+  @@index([symbol, timestamp])
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  // Organization context
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  
+  // User context
+  userId         String
+  createdByUser  User         @relation("CreatedOrders", fields: [userId], references: [id])
+  
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id])
+
+  side           OrderSide
+  
+  // Quantities
+  quantityMW     Float
+  quantityPercent Float?     // Optional, if entered as %
+  
+  limitPrice     Float
+  validUntil     DateTime
+  
+  status         OrderStatus @default(DRAFT)
+  
+  // Execution details
+  filledMW       Float       @default(0)
+  averageFillPrice Float?
+  
+  // Fills history
+  fills          Fill[]
+  
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Fill {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  
+  executedMW  Float
+  price       Float
+  executedAt  DateTime @default(now())
+  
+  // Who executed it (Trader)
+  executedByUserId String? 
+}
+
+model Position {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id])
+  
+  netQuantityMW  Float    @default(0) // Can be negative check Short logic
+  
+  updatedAt      DateTime @updatedAt
+  
+  @@unique([organizationId, productId])
+}
+
+model NewsItem {
+  id          String   @id @default(cuid())
+  title       String
+  summary     String
+  url         String
+  source      String
+  publishedAt DateTime
+  tags        String[] // ["Power", "PL", "Regulacje"]
+  
+  createdAt   DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  action    String   // "LOGIN", "ORDER_CREATE", "TERMS_ACCEPT"
+  resource  String?  // "Order:123"
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  
+  timestamp DateTime @default(now())
+}
+
+// Auth.js / NextAuth mandated models (if using adapter)
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Market Data Models for RDN and Futures
+model EnergyPrice {
+  id        String   @id @default(cuid())
+  date      String   // YYYY-MM-DD
+  hour      Int
+  price     Float
+  volume    Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([date, hour]) // Prevent duplicates
+  @@index([date])
+}
+
+model FuturesQuote {
+  id           String   @id @default(cuid())
+  date         String   // YYYY-MM-DD (Quotation Date)
+  contract     String   // e.g., "BASE_Y-26"
+  price        Float    // Settlement Price (DKR)
+  maxPrice     Float?
+  minPrice     Float?
+  volume       Float    @default(0)
+  openInterest Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([date, contract]) // Prevent duplicates
+  @@index([contract])
+  @@index([date])
+}

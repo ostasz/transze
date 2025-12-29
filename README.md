@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ekovoltis Transze Portal
+
+A secure B2B trading portal for electricity futures. All rights reserved Ekovoltis S.A.
+
+## Tech Stack
+- **Framework**: Next.js 16 (App Router)
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Auth**: Auth.js (NextAuth) v5 + Prisma Adapter
+- **UI**: Tailwind CSS + shadcn/ui
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- PostgreSQL Database
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Installation
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2.  **Environment Setup**:
+    Create `.env` file:
+    ```env
+    DATABASE_URL="postgresql://user:password@localhost:5432/transze?schema=public"
+    NEXTAUTH_SECRET="supersecretchangeit"
+    NEXT_PUBLIC_APP_URL="http://localhost:3000"
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3.  **Database Migration**:
+    ```bash
+    npx prisma migrate dev --name init
+    ```
 
-## Learn More
+4.  **Seed Database**:
+    ```bash
+    npx prisma db seed
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+5.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Features
+- **Terminal**: Live quotes and market news.
+- **Trading**: Buy/Sell futures contracts (BASE, PEAK, GAS).
+- **Admin**: User management, Contract management, GDPR compliance.
+- **Security**: RBAC, Audit Logs, Terms of Service enforcement.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
+- `src/app`: App Router pages
+- `src/components`: UI components (shadcn)
+- `src/lib`: Utilities (auth, prisma)
+- `prisma`: Database schema and seed
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+Proprietary / Ekovoltis Internal Use Only.

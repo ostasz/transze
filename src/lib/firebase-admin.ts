@@ -11,6 +11,10 @@ const serviceAccount = {
 
 export function getAdminApp() {
     if (getApps().length === 0) {
+        console.log("[FirebaseAdmin] Initializing with Project ID:", serviceAccount.projectId);
+        console.log("[FirebaseAdmin] Client Email present:", !!serviceAccount.clientEmail);
+        console.log("[FirebaseAdmin] Private Key present:", !!serviceAccount.privateKey);
+
         return initializeApp({
             credential: cert(serviceAccount),
         });
