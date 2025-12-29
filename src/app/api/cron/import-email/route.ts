@@ -38,8 +38,12 @@ export async function GET() {
                 console.log(`[Cron] Processing RDN attachment: ${filename} from message ${msg.id}`);
                 const csvData = await getMessageAttachment(msg.id!, attachmentId);
                 // Process
-                const result = await processEnergyPriceData(csvData);
-                results.push(`RDN: ${result.processed} records`);
+                if (csvData) {
+                    const result = await processEnergyPriceData(csvData);
+                    results.push(`RDN: ${result.processed} records`);
+                } else {
+                    console.warn(`[Cron] Empty RDN attachment data`);
+                }
             }
         } else {
             console.log("[Cron] No RDN email found.");
@@ -67,8 +71,12 @@ export async function GET() {
                 console.log(`[Cron] Processing Futures attachment: ${filename} from message ${msg.id}`);
                 const csvData = await getMessageAttachment(msg.id!, attachmentId);
                 // Process
-                const result = await processFuturesData(csvData);
-                results.push(`Futures: ${result.processed} records`);
+                if (csvData) {
+                    const result = await processFuturesData(csvData);
+                    results.push(`Futures: ${result.processed} records`);
+                } else {
+                    console.warn(`[Cron] Empty Futures attachment data`);
+                }
             }
         } else {
             console.log("[Cron] No Futures email found.");
