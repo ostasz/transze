@@ -1,11 +1,15 @@
+import { prisma } from "@/lib/prisma"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { UserActions } from "./user-actions"
 
-// ... inside TableHeader (I need to handle this via MULTIPLE chunks or replace whole file, stick to replace logic)
+export const dynamic = 'force-dynamic'
 
 export default async function UsersPage() {
     const users = await prisma.user.findMany({
         include: { organization: true },
-        orderBy: { createdAt: 'desc' } // Better sort
+        orderBy: { createdAt: 'desc' }
     })
 
     return (
