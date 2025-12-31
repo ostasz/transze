@@ -208,13 +208,16 @@ export async function GET(req: NextRequest) {
         const curveContractNames = filteredCurveQuotes.map(q => q.contract);
         const thirtyDaysAgo = new Date(targetDate.getTime() - 45 * 24 * 60 * 60 * 1000); // Safe buffer
 
-        const curveHistory = await prisma.futuresQuote.findMany({
-            where: {
-                contract: { in: curveContractNames },
-                date: { lte: targetDate, gte: thirtyDaysAgo }
-            },
-            orderBy: { date: 'asc' }
-        });
+        let curveHistory: any[] = [];
+        if (curveContractNames.length > 0) {
+            curveHistory = await prisma.futuresQuote.findMany({
+                where: {
+                    contract: { in: curveContractNames },
+                    date: { lte: targetDate, gte: thirtyDaysAgo }
+                },
+                orderBy: { date: 'asc' }
+            });
+        }
 
         // Group by contract
         const historyByContract: Record<string, any[]> = {};
