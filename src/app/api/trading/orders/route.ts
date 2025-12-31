@@ -11,6 +11,8 @@ const orderSchema = z.object({
     limitPrice: z.number(),
 })
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     try {
         const session = await auth()
