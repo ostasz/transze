@@ -1,13 +1,11 @@
-import { prisma } from "@/lib/prisma"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { UserActions } from "./user-actions"
 
-export const dynamic = 'force-dynamic'
+// ... inside TableHeader (I need to handle this via MULTIPLE chunks or replace whole file, stick to replace logic)
 
 export default async function UsersPage() {
     const users = await prisma.user.findMany({
-        include: { organization: true }
+        include: { organization: true },
+        orderBy: { createdAt: 'desc' } // Better sort
     })
 
     return (
@@ -27,6 +25,7 @@ export default async function UsersPage() {
                             <TableHead>Rola</TableHead>
                             <TableHead>Organizacja</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead className="w-[70px]">Akcje</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -35,7 +34,14 @@ export default async function UsersPage() {
                                 <TableCell>{u.email}</TableCell>
                                 <TableCell>{u.role}</TableCell>
                                 <TableCell>{u.organization?.name || "-"}</TableCell>
-                                <TableCell>{u.isActive ? "Aktywny" : "Nieaktywny"}</TableCell>
+                                <TableCell>
+                                    <span className={u.isActive ? "text-green-600 font-medium" : "text-gray-500"}>
+                                        {u.isActive ? "Aktywny" : "Nieaktywny"}
+                                    </span>
+                                </TableCell>
+                                <TableCell>
+                                    <UserActions user={u} />
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
