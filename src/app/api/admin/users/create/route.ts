@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import bcrypt from "bcryptjs"
-import { v4 as uuidv4 } from 'uuid' // Or crypto.randomUUID
+// import { v4 as uuidv4 } from 'uuid' // Removed unused import
 
 export const dynamic = 'force-dynamic';
 
