@@ -41,10 +41,7 @@ function QuoteTable({ data }: { data: any[] }) {
 }
 
 export function QuotesWidget() {
-    const [powerData, setPowerData] = useState<any[]>([])
-    const [gasData, setGasData] = useState<any[]>([])
-    const [co2Data, setCo2Data] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
+    const [dataDate, setDataDate] = useState<string>("")
 
     useEffect(() => {
         const fetchQuotes = async () => {
@@ -63,6 +60,8 @@ export function QuotesWidget() {
                 setPowerData(powerJson.ticker || []);
                 setGasData(gasJson.ticker || []);
                 setCo2Data(co2Json.ticker || []);
+
+                if (powerJson.effectiveDate) setDataDate(powerJson.effectiveDate);
             } catch (error) {
                 console.error("Failed to fetch quotes", error);
             } finally {
@@ -77,7 +76,7 @@ export function QuotesWidget() {
         <Card className="h-full">
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>Notowania (Live)</CardTitle>
+                    <CardTitle>Notowania {dataDate ? `(${dataDate})` : ""}</CardTitle>
                 </div>
             </CardHeader>
             <CardContent>

@@ -194,14 +194,27 @@ export async function GET(req: NextRequest) {
         // FILTER: Exclude Weekly (W-) products as requested
         const filteredCurveQuotes = curveQuotes.filter(q => !q.contract.includes('_W-'));
 
-        const ticker = filteredCurveQuotes.map(q => ({
-            contract: q.contract,
-            price: q.price,
-            change: 0, // This would require fetching previous day's data for each contract
-            min: q.minPrice,
-            max: q.maxPrice,
-            volume: q.volume
-        }));
+        // Fetch previous day's curve for change calc
+        const prevCurveQuotes = await prisma.futuresQuote.findMany({
+            where: {
+                date: prevDate,
+                contract: {
+                    startsWith: contract.split('_')[0]
+                }
+            }
+        });
+
+        const ticker = filteredCurveQuotes.map(q => {
+            const prevQ = prevCurveQuotes.find(pq => pq.contract === q.contract);
+            return {
+                contract: q.contract,
+                price: q.price,
+                change: prevQ ? calcPct(q.price, prevQ.price) : 0,
+                min: q.minPrice,
+                max: q.maxPrice,
+                volume: q.volume
+            };
+        });
 
         // OPTIMIZATION: Calculate SMA15 for each curve contract.
         // We need 15 past data points for each contract in curveQuotes.
