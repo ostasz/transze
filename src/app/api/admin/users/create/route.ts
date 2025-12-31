@@ -53,9 +53,16 @@ export async function POST(req: Request) {
         })
 
         // Store token logic (using VerificationToken table usually)
-        // prisma.verificationToken.create(...)
+        const expires = new Date(new Date().getTime() + 24 * 60 * 60 * 1000) // 24h
+        await prisma.verificationToken.create({
+            data: {
+                identifier: email,
+                token: inviteToken,
+                expires
+            }
+        })
 
-        const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/activate?token=${inviteToken}&email=${email}` // Mocked
+        const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/activate?token=${inviteToken}&email=${email}`
 
         // Log Audit
         await prisma.auditLog.create({
