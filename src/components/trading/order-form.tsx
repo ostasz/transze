@@ -26,10 +26,13 @@ export function OrderForm() {
     const [isLoading, setIsLoading] = useState(false)
 
     const form = useForm<z.infer<typeof orderSchema>>({
-        resolver: zodResolver(orderSchema) as any, // Bypass strict type check for MVP speed
+        resolver: zodResolver(orderSchema) as any,
         defaultValues: {
+            instrument: "",
             side: "BUY",
             quantityType: "MW",
+            quantity: 0,
+            limitPrice: 0,
         },
     })
 
@@ -117,7 +120,13 @@ export function OrderForm() {
                                     <FormItem>
                                         <FormLabel>Ilość</FormLabel>
                                         <FormControl>
-                                            <Input type="number" step="0.1" {...field} />
+                                            <Input
+                                                type="number"
+                                                step="0.1"
+                                                {...field}
+                                                value={field.value ?? ""}
+                                                onChange={e => field.onChange(e.target.valueAsNumber)}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -153,7 +162,13 @@ export function OrderForm() {
                                 <FormItem>
                                     <FormLabel>Cena Limitu (PLN/MWh)</FormLabel>
                                     <FormControl>
-                                        <Input type="number" step="0.01" {...field} />
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            {...field}
+                                            value={field.value ?? ""}
+                                            onChange={e => field.onChange(e.target.valueAsNumber)}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
