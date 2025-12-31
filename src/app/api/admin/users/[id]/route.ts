@@ -47,15 +47,34 @@ export async function PATCH(
 
         const { id } = await params
         const body = await req.json()
-        const { isActive } = body
+        const { isActive, name, role, organizationName } = body
 
-        if (typeof isActive !== 'boolean') {
-            return NextResponse.json({ message: "Nieprawidłowe dane" }, { status: 400 })
+        // Handle partial updates
+        const updateData: any = {}
+        if (typeof isActive === 'boolean') updateData.isActive = isActive
+        if (name) updateData.name = name
+        if (role) updateData.role = role
+
+        // Organization Logic
+        if (organizationName) {
+            let org = await prisma.organization.findFirst({ where: { name: organizationName } })
+            if (!org) {
+                org = await prisma.organization.create({
+                    data: {
+                        name: organizationName,
+                        type: role && role.startsWith("CLIENT") ? "CLIENT" : "INTERNAL"
+                    }
+                })
+            }
+            updateData.organizationId = org.id
+        } else if (organizationName === "") {
+            // Explicitly removing organization? Optional requirement, but let's assume empty string means "no org"
+            updateData.organizationId = null
         }
 
         const user = await prisma.user.update({
             where: { id },
-            data: { isActive }
+            data: updateData
         })
 
         return NextResponse.json(user)

@@ -87,6 +87,13 @@ export function UserActions({ user }: { user: any }) {
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
                     Kopiuj ID
                 </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem onClick={() => router.push(`/admin/users/${user.id}/edit`)}>
+                    <span className="flex items-center">✏️ Edytuj</span>
+                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem onClick={toggleStatus}>
