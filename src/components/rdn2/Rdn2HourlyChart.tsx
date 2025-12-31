@@ -14,7 +14,15 @@ export default function Rdn2HourlyChart({ data }: Rdn2HourlyChartProps) {
             return (
                 <div className="bg-white p-3 border border-gray-200 rounded-xl shadow-lg text-sm">
                     <p className="font-bold text-gray-900 mb-2">Godzina {label}</p>
-                    {payload.map((entry: any, index: number) => (
+                    {payload.sort((a: any, b: any) => {
+                        const order: Record<string, number> = {
+                            'Cena (PLN/MWh)': 0,
+                            'Wczoraj': 1,
+                            'Średnia (7 dni)': 2,
+                            'Wolumen': 3
+                        };
+                        return (order[a.name] ?? 10) - (order[b.name] ?? 10);
+                    }).map((entry: any, index: number) => (
                         <div key={index} className="flex items-center gap-2 mb-1">
                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
                             <span className="text-gray-500">{entry.name}:</span>
@@ -72,7 +80,7 @@ export default function Rdn2HourlyChart({ data }: Rdn2HourlyChartProps) {
                         width={40}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                    <Legend verticalAlign="top" height={36} wrapperStyle={{ paddingBottom: '20px' }} />
 
                     {/* Volume Bar */}
                     <Bar
