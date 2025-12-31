@@ -100,7 +100,15 @@ export async function GET(req: NextRequest) {
         });
 
         if (historyData.length === 0) {
-            return NextResponse.json({ history: [], kpi: null }, { status: 404 });
+            // Return 200 with empty structure to avoid frontend console errors
+            return NextResponse.json({
+                history: [],
+                kpi: null,
+                technical: null,
+                forwardCurve: [],
+                ticker: [],
+                effectiveDate: null
+            }, { status: 200 });
         }
 
         // 2. Identify "Last Session" (Target Date)
