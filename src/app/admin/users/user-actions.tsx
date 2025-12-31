@@ -12,20 +12,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog" // Creating basic alert dialog inline if missing, but usually exists. Wait, I didn't see it in list.
-// Checking list in step 1289 -> ALERT.TSX exists, but ALERT-DIALOG? No. Default shadcn has alert-dialog separately.
-// The user list did NOT show 'alert-dialog.tsx'. It showed 'dialog.tsx' and 'alert.tsx'.
-// I will use standard 'window.confirm' or 'Dialog' for simplicity if Alert Dialog is missing, or just a simple confirm state.
-// Let's use simple state for confirmation to avoid missing component issues.
+// AlertDialog unused, using native confirm for simplicity
+
 
 export function UserActions({ user }: { user: any }) {
     const router = useRouter()
