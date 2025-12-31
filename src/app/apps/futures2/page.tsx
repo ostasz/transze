@@ -113,10 +113,10 @@ export default function FuturesPage2() {
                     {/* View Toggle */}
                     <div className="bg-gray-900 p-1 rounded-lg flex items-center border border-gray-700">
                         <Link href="/futures" className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-colors">
-                            Dane podstawowe
+                            Simple
                         </Link>
                         <span className="px-3 py-1.5 rounded-md text-sm font-bold bg-[#009D8F] text-white shadow-sm cursor-default">
-                            Dane zaawansowane
+                            Pro
                         </span>
                     </div>
                 </div>
