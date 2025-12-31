@@ -2,8 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { OrderForm } from "@/components/trading/order-form"
 import { OrdersTable } from "@/components/trading/orders-table"
 import { PositionsWidget } from "@/components/trading/positions-widget"
-import { MarketDataService } from "@/services/market-data"
-{/* Market Ticker (Replaces Cards) */ }
+import { MarketTicker } from "@/components/trading/market-ticker"
+
+export default function TradingPage() {
+    return (
+        <div className="flex flex-col gap-6">
+            <h1 className="text-3xl font-bold tracking-tight text-primary">Panel Handlowy</h1>
+
+            {/* Market Ticker (Replaces Cards) */}
             <MarketTicker />
 
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
@@ -24,11 +30,10 @@ import { MarketDataService } from "@/services/market-data"
                         </CardHeader>
                         <CardContent>
                             <OrdersTable />
-                            {/* <div className="text-muted-foreground text-sm">Brak aktywnych zleceń.</div> */}
                         </CardContent>
                     </Card>
                 </div>
             </div>
-        </div >
+        </div>
     )
 }
