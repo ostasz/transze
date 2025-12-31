@@ -12,7 +12,8 @@ import {
     Settings,
     LogOut,
     FileText,
-    Briefcase
+    Briefcase,
+    TrendingUp
 } from "lucide-react"
 
 export function Sidebar() {
@@ -43,6 +44,12 @@ export function Sidebar() {
             href: "/rdn2",
             label: "Analiza RDN",
             icon: Newspaper,
+            roles: ["CLIENT_ADMIN", "CLIENT_TRADER", "CLIENT_VIEWER", "ADMIN", "BACKOFFICE", "TRADER", "RISK", "PROSPECT"],
+        },
+        {
+            href: "/futures",
+            label: "Rynek Terminowy",
+            icon: TrendingUp,
             roles: ["CLIENT_ADMIN", "CLIENT_TRADER", "CLIENT_VIEWER", "ADMIN", "BACKOFFICE", "TRADER", "RISK", "PROSPECT"],
         },
         {

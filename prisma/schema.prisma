@@ -301,7 +301,7 @@ model EnergyPrice {
 
 model FuturesQuote {
   id           String   @id @default(cuid())
-  date         String   // YYYY-MM-DD (Quotation Date)
+  date         DateTime // YYYY-MM-DD (Quotation Date)
   contract     String   // e.g., "BASE_Y-26"
   price        Float    // Settlement Price (DKR)
   maxPrice     Float?

@@ -57,7 +57,6 @@ export function QuotesWidget() {
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle>Notowania</CardTitle>
-                    <Badge variant="outline" className="text-xs">Live (Delay 15m)</Badge>
                 </div>
             </CardHeader>
             <CardContent>

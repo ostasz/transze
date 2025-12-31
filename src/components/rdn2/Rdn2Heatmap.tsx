@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import { cn } from '@/lib/utils';
 
 interface Rdn2HeatmapProps {
@@ -64,9 +65,9 @@ export default function Rdn2Heatmap({ data }: Rdn2HeatmapProps) {
 
                     {/* Rows (Hours) */}
                     {data.hours.map((hour, hIdx) => (
-                        <>
+                        <Fragment key={hIdx}>
                             {/* Hour Label */}
-                            <div key={`h-${hIdx}`} className="text-[10px] text-gray-400 font-mono text-right pr-2 pt-1 h-6">
+                            <div className="text-[10px] text-gray-400 font-mono text-right pr-2 pt-1 h-6">
                                 {hour.toString().padStart(2, '0')}
                             </div>
 
@@ -85,7 +86,7 @@ export default function Rdn2Heatmap({ data }: Rdn2HeatmapProps) {
                                     </div>
                                 );
                             })}
-                        </>
+                        </Fragment>
                     ))}
                 </div>
             </div>

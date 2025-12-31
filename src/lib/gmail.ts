@@ -6,6 +6,10 @@ const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET || "";
 const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN || "";
 
 export function getGmailClient() {
+    if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
+        throw new Error("Missing Gmail OAuth credentials. Please check GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN in your .env file.");
+    }
+
     const oauth2Client = new google.auth.OAuth2(
         CLIENT_ID,
         CLIENT_SECRET,
