@@ -48,7 +48,7 @@ export default function ForwardCurveChart({ data }: ForwardCurveChartProps) {
                             }}
                             itemStyle={{ fontSize: '13px', paddingTop: '2px', paddingBottom: '2px' }}
                             labelStyle={{ color: '#9CA3AF', marginBottom: '8px', fontSize: '12px' }}
-                            formatter={(value: any, name: string) => {
+                            formatter={(value: any, name: any) => {
                                 const valStr = Number(value).toFixed(2) + ' PLN';
                                 if (name === 'price') return [valStr, 'Cena'];
                                 if (name === 'sma15') return [valStr, 'SMA15'];

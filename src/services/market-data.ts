@@ -56,7 +56,7 @@ export class MarketDataService {
             });
 
             return records.map(r => ({
-                date: r.date,
+                date: r.date.toISOString().split('T')[0], // Standard YYYY-MM-DD
                 contract: r.contract,
                 DKR: r.price, // Map price -> DKR
                 maxPrice: r.maxPrice || 0,
@@ -86,7 +86,7 @@ export class MarketDataService {
             if (!latest) return null;
 
             return {
-                date: latest.date,
+                date: latest.date.toISOString().split('T')[0],
                 contract: latest.contract,
                 DKR: latest.price,
                 maxPrice: latest.maxPrice || 0,

@@ -53,7 +53,7 @@ export function normalizeDate(dateStr: string): string {
     // Handle the previously identified garbage format (just in case legacy data persists)
     // "2024 12:00:00 AM-03-\n4"
     if (clean.includes("AM") || clean.includes("PM")) {
-        const match = clean.match(/^(\d{4}).*?-(\d{2}).*?-(\d{1,2})$/s); // /s for dotall if needed, but regex above was specific
+        const match = clean.match(/^(\d{4})[\s\S]*?-(\d{2})[\s\S]*?-(\d{1,2})$/); // Compatible with older ES targets
         if (match) {
             const year = match[1];
             const day = match[2];
