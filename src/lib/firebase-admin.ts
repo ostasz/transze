@@ -11,10 +11,7 @@ const serviceAccount = {
 
 export function getAdminApp() {
     if (getApps().length === 0) {
-        console.log("[FirebaseAdmin] Initializing with Project ID:", serviceAccount.projectId);
-        console.log("[FirebaseAdmin] Client Email present:", !!serviceAccount.clientEmail);
-        console.log("[FirebaseAdmin] Private Key present:", !!serviceAccount.privateKey);
-
+        // console.log("[FirebaseAdmin] Initializing..."); // Quiet logs for build
         return initializeApp({
             credential: cert(serviceAccount),
         });
@@ -22,5 +19,20 @@ export function getAdminApp() {
     return getApp();
 }
 
-export const adminAuth = getAuth(getAdminApp());
-export const adminDb = getFirestore(getAdminApp());
+// Lazy load instances to prevent build-time initialization errors
+let _adminAuth: ReturnType<typeof getAuth> | null = null;
+let _adminDb: ReturnType<typeof getFirestore> | null = null;
+
+export function getAdminAuth() {
+    if (!_adminAuth) {
+        _adminAuth = getAuth(getAdminApp());
+    }
+    return _adminAuth;
+}
+
+export function getAdminDb() {
+    if (!_adminDb) {
+        _adminDb = getFirestore(getAdminApp());
+    }
+    return _adminDb;
+}

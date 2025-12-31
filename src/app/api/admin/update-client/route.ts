@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         if (name) updateData.displayName = name;
 
         if (Object.keys(updateData).length > 0) {
-            await adminAuth.updateUser(uid, updateData);
+            await getAdminAuth().updateUser(uid, updateData);
         }
 
         // Update user document in Firestore
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         if (clientConfig) firestoreUpdate.clientConfig = clientConfig;
         if (companyDetails) firestoreUpdate.companyDetails = companyDetails;
 
-        await adminDb.collection("users").doc(uid).update(firestoreUpdate);
+        await getAdminDb().collection("users").doc(uid).update(firestoreUpdate);
 
         return NextResponse.json({
             success: true,

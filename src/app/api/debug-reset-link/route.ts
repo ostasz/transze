@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebase-admin";
+import { getAdminAuth } from "@/lib/firebase-admin";
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     }
 
     try {
-        const link = await adminAuth.generatePasswordResetLink(email);
+        const link = await getAdminAuth().generatePasswordResetLink(email);
         return NextResponse.json({ link });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
