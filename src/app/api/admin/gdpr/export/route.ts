@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
+// import { prisma } from "@/lib/prisma"
+// import { auth } from "@/lib/auth"
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
+    // TEMPORARY STUB to unblock Vercel build
+    return NextResponse.json({ message: "GDPR Export is currently disabled for maintenance." }, { status: 503 })
+
+    /*
     const session = await auth()
     // access check... role === ADMIN/BACKOFFICE
 
@@ -25,4 +29,5 @@ export async function GET(req: Request) {
 
     // Return formatted JSON
     return NextResponse.json(user)
+    */
 }
