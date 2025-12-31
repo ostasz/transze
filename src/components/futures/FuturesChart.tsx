@@ -58,32 +58,32 @@ export default function FuturesChart({ dataY1, dataY2, year1, year2 }: FuturesCh
 
     return (
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-            <div className="w-full h-[400px]">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-                    <div>
-                        <h2 className="text-lg font-bold text-gray-900">Analiza Cenowa</h2>
-                        <p className="text-xs text-gray-500">Porównanie kontraktów rocznych (Close Price)</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                <div>
+                    <h2 className="text-lg font-bold text-gray-900">Analiza Cenowa</h2>
+                    <p className="text-xs text-gray-500">Porównanie kontraktów rocznych (Close Price)</p>
+                </div>
+                <div className="flex items-center gap-4 mt-2 sm:mt-0">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center">
+                            <div className="w-2 h-2 rounded-full bg-[#134E4A]"></div>
+                            <div className="w-4 h-0.5 bg-[#134E4A] -ml-1"></div>
+                            <div className="w-2 h-2 rounded-full bg-[#134E4A] -ml-1"></div>
+                        </div>
+                        <span className="font-medium">Kontrakt {year1}</span>
                     </div>
-                    <div className="flex items-center gap-4 mt-2 sm:mt-0">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <div className="flex items-center">
-                                <div className="w-2 h-2 rounded-full bg-[#134E4A]"></div>
-                                <div className="w-4 h-0.5 bg-[#134E4A] -ml-1"></div>
-                                <div className="w-2 h-2 rounded-full bg-[#134E4A] -ml-1"></div>
-                            </div>
-                            <span className="font-medium">Kontrakt {year1}</span>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center">
+                            <div className="w-2 h-2 rounded-full bg-[#F97316]"></div>
+                            <div className="w-4 h-0.5 bg-[#F97316] border-t border-dashed border-[#F97316] -ml-1"></div>
+                            <div className="w-2 h-2 rounded-full bg-[#F97316] -ml-1"></div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <div className="flex items-center">
-                                <div className="w-2 h-2 rounded-full bg-[#F97316]"></div>
-                                <div className="w-4 h-0.5 bg-[#F97316] border-t border-dashed border-[#F97316] -ml-1"></div>
-                                <div className="w-2 h-2 rounded-full bg-[#F97316] -ml-1"></div>
-                            </div>
-                            <span className="font-medium">Kontrakt {year2}</span>
-                        </div>
+                        <span className="font-medium">Kontrakt {year2}</span>
                     </div>
                 </div>
+            </div>
 
+            <div className="w-full h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />

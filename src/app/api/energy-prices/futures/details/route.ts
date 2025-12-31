@@ -191,7 +191,10 @@ export async function GET(req: NextRequest) {
             orderBy: { contract: 'asc' }
         });
 
-        const ticker = curveQuotes.map(q => ({
+        // FILTER: Exclude Weekly (W-) products as requested
+        const filteredCurveQuotes = curveQuotes.filter(q => !q.contract.includes('_W-'));
+
+        const ticker = filteredCurveQuotes.map(q => ({
             contract: q.contract,
             price: q.price,
             change: 0, // This would require fetching previous day's data for each contract
@@ -202,7 +205,7 @@ export async function GET(req: NextRequest) {
 
         // OPTIMIZATION: Calculate SMA15 for each curve contract.
         // We need 15 past data points for each contract in curveQuotes.
-        const curveContractNames = curveQuotes.map(q => q.contract);
+        const curveContractNames = filteredCurveQuotes.map(q => q.contract);
         const thirtyDaysAgo = new Date(targetDate.getTime() - 45 * 24 * 60 * 60 * 1000); // Safe buffer
 
         const curveHistory = await prisma.futuresQuote.findMany({
@@ -220,7 +223,7 @@ export async function GET(req: NextRequest) {
             historyByContract[h.contract].push(h);
         });
 
-        const forwardCurve = curveQuotes.map(q => {
+        const forwardCurve = filteredCurveQuotes.map(q => {
             // Calc SMA15
             const history = historyByContract[q.contract] || [];
             // history is sorted asc. We need last 15 up to targetDate.

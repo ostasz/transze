@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { normalizeDate } from "@/lib/import-utils";
 import { auth } from "@/lib/auth"; // Auth v5
 
+export const dynamic = 'force-dynamic';
+
 const BATCH_SIZE = 1000;
 
 export async function POST(req: NextRequest) {

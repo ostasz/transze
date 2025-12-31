@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth"
 import bcrypt from "bcryptjs"
 import { v4 as uuidv4 } from 'uuid' // Or crypto.randomUUID
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     try {
         const session = await auth()

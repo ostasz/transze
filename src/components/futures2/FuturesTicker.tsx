@@ -25,8 +25,8 @@ export default function FuturesTicker({ data }: FuturesTickerProps) {
                     </thead>
                     <tbody className="divide-y divide-gray-800">
                         {data.map((row, index) => (
-                            <tr key={`${row.instrument}-${index}`} className="hover:bg-gray-800/50 transition-colors">
-                                <td className="px-4 py-3 font-medium text-white">{row.instrument}</td>
+                            <tr key={`${row.contract}-${index}`} className="hover:bg-gray-800/50 transition-colors">
+                                <td className="px-4 py-3 font-medium text-white">{row.contract}</td>
                                 <td className="px-4 py-3 text-right font-bold text-gray-200">{row.price.toFixed(2)}</td>
                                 <td className="px-4 py-3 text-right text-gray-500">{row.min?.toFixed(2) || '-'}</td>
                                 <td className="px-4 py-3 text-right text-purple-400 font-mono">{row.volume > 0 ? row.volume.toLocaleString() : '-'}</td>

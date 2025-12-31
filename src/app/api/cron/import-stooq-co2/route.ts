@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import Papa from 'papaparse';
 
+export const dynamic = 'force-dynamic';
+
 // Stooq Tickers configuration
 const TICKERS = [
     { symbol: 'CK.F', contract: 'CO2-EUA-SPOT' }, // Continuous
