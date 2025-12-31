@@ -1,5 +1,3 @@
-
-
 "use client"
 
 import { useEffect, useState } from "react"
@@ -41,6 +39,10 @@ function QuoteTable({ data }: { data: any[] }) {
 }
 
 export function QuotesWidget() {
+    const [powerData, setPowerData] = useState<any[]>([])
+    const [gasData, setGasData] = useState<any[]>([])
+    const [co2Data, setCo2Data] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
     const [dataDate, setDataDate] = useState<string>("")
 
     useEffect(() => {
