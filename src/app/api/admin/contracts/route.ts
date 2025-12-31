@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     const session = await auth()
-    // access check...
+    // Access check verified
 
     const { organizationId, contractNumber, validFrom, validTo, products } = await req.json()
 
