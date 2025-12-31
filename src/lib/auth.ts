@@ -33,12 +33,15 @@ export const authConfig = {
     ],
     session: { strategy: "jwt" }, // JWT is easier for Vercel edge/serverless
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.role = user.role
                 token.id = user.id
                 token.organizationId = user.organizationId
-                token.termsVersionAccepted = user.termsVersionAccepted // Add terms version
+                token.termsVersionAccepted = user.termsVersionAccepted
+            }
+            if (trigger === "update" && session) {
+                token.termsVersionAccepted = session.termsVersionAccepted
             }
             return token
         },
