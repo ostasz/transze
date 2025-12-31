@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { CURRENT_TERMS_VERSION } from "@/lib/constants"
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     try {
         const session = await auth()

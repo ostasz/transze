@@ -85,14 +85,15 @@ export default function FuturesPage2() {
     return (
         <div className="text-gray-100 font-sans p-6">
             {/* Header */}
+            {/* Header */}
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 bg-[#1F2937] p-4 rounded-xl border border-gray-800 shadow-sm gap-4 sticky top-0 z-50">
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="bg-blue-500/10 p-2 rounded-lg text-blue-500">
                         <span className="text-2xl">⚡</span>
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-white tracking-tight">Rynek Terminowy (Futures)</h1>
-                        <p className="text-xs text-gray-400">Polish Power Exchange (TGE)</p>
+                        <h1 className="text-xl font-bold text-white tracking-tight">Centrum Analiz Futures</h1>
+                        <p className="text-xs text-gray-400">Widok Zaawansowany (PRO)</p>
                     </div>
                 </div>
 
@@ -109,18 +110,14 @@ export default function FuturesPage2() {
 
                     <div className="h-8 w-px bg-gray-700 mx-2 hidden md:block"></div>
 
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full transition-all"
-                        >
-                            <RefreshCw size={18} />
-                        </button>
-                        <div className="bg-gray-900 p-1 rounded-lg flex items-center border border-gray-700">
-                            <span className="px-3 py-1.5 rounded-md text-xs font-bold bg-[#009D8F] text-white shadow-sm cursor-default">
-                                PRO
-                            </span>
-                        </div>
+                    {/* View Toggle */}
+                    <div className="bg-gray-900 p-1 rounded-lg flex items-center border border-gray-700">
+                        <Link href="/futures" className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                            Dane podstawowe
+                        </Link>
+                        <span className="px-3 py-1.5 rounded-md text-sm font-bold bg-[#009D8F] text-white shadow-sm cursor-default">
+                            Dane zaawansowane
+                        </span>
                     </div>
                 </div>
             </header>
