@@ -9,15 +9,23 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { format } from "date-fns"
 
-export function OrdersTable() {
-    // Mock data for MVP visual if API isn't ready or for simplicity
-    // Ideally fetch from /api/trading/orders
-    const orders = [
-        { id: "1", instrument: "BASE_Y_26", side: "BUY", quantity: 5, price: 450.00, status: "FILLED" },
-        { id: "2", instrument: "PEAK_Q3_25", side: "SELL", quantity: 2, price: 580.50, status: "SUBMITTED" },
-    ]
+interface Order {
+    id: string
+    instrument: string
+    side: "BUY" | "SELL"
+    quantity: number
+    price: number
+    status: string
+    createdAt: Date | string
+}
 
+interface OrdersTableProps {
+    orders: Order[]
+}
+
+export function OrdersTable({ orders = [] }: OrdersTableProps) {
     return (
         <div className="rounded-md border">
             <Table>
@@ -28,6 +36,7 @@ export function OrdersTable() {
                         <TableHead>Wolumen (MW)</TableHead>
                         <TableHead>Cena (PLN)</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Data</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -42,11 +51,16 @@ export function OrdersTable() {
                             <TableCell>{order.quantity}</TableCell>
                             <TableCell>{order.price.toFixed(2)}</TableCell>
                             <TableCell>{order.status}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                                {order.createdAt ? format(new Date(order.createdAt), "dd.MM HH:mm") : "-"}
+                            </TableCell>
                         </TableRow>
                     ))}
                     {orders.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground">Brak aktywnych zleceń.</TableCell>
+                            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                                Brak aktywnych zleceń. Złóż pierwsze zlecenie w formularzu obok.
+                            </TableCell>
                         </TableRow>
                     )}
                 </TableBody>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -38,16 +39,25 @@ export function OrderForm() {
         },
     })
 
+    const router = useRouter()
+
     async function onSubmit(values: z.infer<typeof orderSchema>) {
         setIsLoading(true)
         try {
-            // API call stub
-            console.log("Order:", values)
-            await new Promise(r => setTimeout(r, 1000))
-            alert("Zlecenie przyjęte do realizacji (Symulacja)")
+            const res = await fetch("/api/trading/orders", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(values),
+            })
+
+            if (!res.ok) throw new Error("API Error")
+
+            // Successful submission
+            // alert("Zlecenie przyjęte do realizacji")
             form.reset()
+            router.refresh() // Refresh server components (e.g. Orders Table)
         } catch (e) {
-            alert("Błąd składania zlecenia")
+            alert("Błąd składania zlecenia. Sprawdź poprawność danych.")
         } finally {
             setIsLoading(false)
         }

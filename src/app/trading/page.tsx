@@ -4,7 +4,34 @@ import { OrdersTable } from "@/components/trading/orders-table"
 import { PositionsWidget } from "@/components/trading/positions-widget"
 import { MarketTicker } from "@/components/trading/market-ticker"
 
-export default function TradingPage() {
+import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+export default async function TradingPage() {
+    const session = await auth()
+    const organizationId = session?.user?.organizationId
+
+    let orders: any[] = []
+
+    if (organizationId) {
+        const dbOrders = await prisma.order.findMany({
+            where: { organizationId },
+            include: { product: true },
+            orderBy: { createdAt: 'desc' },
+            take: 20
+        })
+
+        orders = dbOrders.map(o => ({
+            id: o.id,
+            instrument: o.product.symbol,
+            side: o.side,
+            quantity: o.quantityMW ?? o.quantityPercent ?? 0,
+            price: o.limitPrice,
+            status: o.status,
+            createdAt: o.createdAt
+        }))
+    }
+
     return (
         <div className="flex flex-col gap-6">
             <h1 className="text-3xl font-bold tracking-tight text-primary">Panel Handlowy</h1>
@@ -29,7 +56,7 @@ export default function TradingPage() {
                             <CardTitle>Twoje Zlecenia</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <OrdersTable />
+                            <OrdersTable orders={orders} />
                         </CardContent>
                     </Card>
                 </div>

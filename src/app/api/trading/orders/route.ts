@@ -13,6 +13,46 @@ const orderSchema = z.object({
 
 export const dynamic = 'force-dynamic';
 
+export async function GET(req: Request) {
+    try {
+        const session = await auth()
+        if (!session?.user?.organizationId) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+        }
+
+        const orders = await prisma.order.findMany({
+            where: {
+                organizationId: session.user.organizationId
+            },
+            include: {
+                product: {
+                    select: { symbol: true }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            take: 50
+        })
+
+        // Map to simpler structure if needed, or return as is
+        const mappedOrders = orders.map(o => ({
+            id: o.id,
+            instrument: o.product.symbol,
+            side: o.side,
+            quantity: o.quantityMW ?? o.quantityPercent ?? 0, // Fallback
+            price: o.limitPrice,
+            status: o.status,
+            createdAt: o.createdAt
+        }))
+
+        return NextResponse.json(mappedOrders)
+    } catch (error) {
+        console.error("GET orders error:", error)
+        return NextResponse.json({ message: "Server error" }, { status: 500 })
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const session = await auth()
@@ -28,7 +68,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Błąd walidacji" }, { status: 400 })
         }
 
-        const { instrument, side, quantityType, quantity, limitPrice } = result.data
+        const { instrument, side, quantityType, quantity, limitPrice, validUntil } = result.data
 
         // Logic:
         // 1. Find Product by symbol 'instrument' (mock or real)
@@ -65,7 +105,7 @@ export async function POST(req: Request) {
                 quantityPercent: quantityType === "PERCENT" ? quantity : null,
                 limitPrice: limitPrice,
                 status: "SUBMITTED",
-                validUntil: new Date(Date.now() + 24 * 60 * 60 * 1000), // Default 24h
+                validUntil: validUntil ? new Date(validUntil) : new Date(Date.now() + 24 * 60 * 60 * 1000), // Default 24h
             }
         })
 
