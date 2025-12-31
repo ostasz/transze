@@ -18,6 +18,7 @@ const orderSchema = z.object({
     quantityType: z.enum(["MW", "PERCENT"]),
     quantity: z.coerce.number().min(0.1, "Minimum 0.1"),
     limitPrice: z.coerce.number().min(0.01, "Cena wymagana"),
+    validUntil: z.string().optional(),
 })
 
 const AVAILABLE_PRODUCTS = ["BASE_Y_26", "BASE_Q3_25", "PEAK_Y_26", "GAS_Y_26"]
@@ -33,6 +34,7 @@ export function OrderForm() {
             quantityType: "MW",
             quantity: 0,
             limitPrice: 0,
+            validUntil: "",
         },
     })
 
@@ -168,6 +170,24 @@ export function OrderForm() {
                                             {...field}
                                             value={field.value ?? ""}
                                             onChange={e => field.onChange(e.target.valueAsNumber)}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="validUntil"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Ważne Do (Opcjonalne)</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="datetime-local"
+                                            {...field}
+                                            value={field.value ?? ""}
                                         />
                                     </FormControl>
                                     <FormMessage />
