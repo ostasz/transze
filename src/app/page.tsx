@@ -9,10 +9,14 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/client"); // Or /admin based on role? Defaulting to client for now as per original code
+    if (status === "authenticated" && session?.user) {
+      if (session.user.role === "ADMIN" || session.user.role === "BACKOFFICE") {
+        router.push("/admin");
+      } else {
+        router.push("/terminal"); // Redirect clients/traders to Market Terminal
+      }
     }
-  }, [status, router]);
+  }, [status, session, router]);
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
