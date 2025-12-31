@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase-admin";
+// import { adminDb } from "@/lib/firebase-admin"; // Removed to prevent build-time init side effects
 import { RDNRecord, FuturesRecord } from "@/types/market-data";
 
 /**
