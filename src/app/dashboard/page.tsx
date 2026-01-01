@@ -37,6 +37,7 @@ export default async function DashboardPage() {
         quantity: o.quantityMW ?? o.quantityPercent ?? 0,
         price: o.limitPrice,
         status: o.status,
+        filledMW: o.filledMW ?? 0,
         createdAt: o.createdAt,
         validUntil: o.validUntil
     }))

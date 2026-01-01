@@ -20,7 +20,7 @@ export interface Order {
     instrument: string
     side: "BUY" | "SELL"
     quantity: number
-    filledMW?: number // Added field
+    filledMW: number // Added field
     price: number
     status: string
     createdAt: Date | string
