@@ -78,6 +78,66 @@ async function main() {
         })
     }
 
+    // 5. Seed News Sources
+    const sources = [
+        { name: "PSE News", type: "RSS", url: "https://www.pse.pl/home/-/asset_publisher/SYKTI8bIXUBw/rss", home: "https://www.pse.pl", trust: 90, priority: 25 },
+        { name: "PSE Komunikaty OSP", type: "RSS", url: "https://www.pse.pl/home/-/asset_publisher/sBY9fi0vULd2/rss", home: "https://www.pse.pl", trust: 100, priority: 40 },
+        { name: "URE Aktualności", type: "RSS", url: "https://www.ure.gov.pl/dokumenty/rss/9-rss-424.rss", home: "https://www.ure.gov.pl", trust: 80, priority: 15 },
+        { name: "URE REMIT", type: "RSS", url: "https://www.ure.gov.pl/dokumenty/rss/9-rss-729.rss", home: "https://www.ure.gov.pl", trust: 90, priority: 25 },
+        { name: "URE Energia Elektr.", type: "RSS", url: "https://www.ure.gov.pl/dokumenty/rss/9-rss-484.rss", home: "https://www.ure.gov.pl", trust: 85, priority: 20 },
+        { name: "URE Gaz", type: "RSS", url: "https://www.ure.gov.pl/dokumenty/rss/9-rss-518.rss", home: "https://www.ure.gov.pl", trust: 85, priority: 20 },
+        { name: "CIRE Energetyka", type: "RSS", url: "https://www.cire.pl/rss/energetyka.xml", home: "https://www.cire.pl", trust: 60, priority: 10 },
+        { name: "CIRE Kraj/Świat", type: "RSS", url: "https://www.cire.pl/rss/kraj-swiat.xml", home: "https://www.cire.pl", trust: 50, priority: 5 },
+        { name: "WysokieNapiecie.pl", type: "RSS", url: "https://wysokienapiecie.pl/feed", home: "https://wysokienapiecie.pl", trust: 70, priority: 8 },
+        { name: "TGE Aktualności", type: "MANUAL", url: "https://tge.pl/aktualnosci-tge", home: "https://tge.pl", trust: 90, priority: 15 },
+    ]
+
+    for (const s of sources) {
+        await prisma.newsSource.upsert({
+            where: { feedUrl: s.url },
+            update: {
+                priority: s.priority,
+                trustLevel: s.trust
+            },
+            create: {
+                name: s.name,
+                type: s.type, // Enum matching
+                feedUrl: s.url,
+                homepageUrl: s.home,
+                trustLevel: s.trust,
+                priority: s.priority
+            }
+        })
+    }
+
+    // 6. Seed Core Tags
+    const coreTags = [
+        "rynek mocy", "DSR", "taryfa", "URE", "PSE", "OZE", "magazyny energii", "ceny energii", "gaz", "węgiel", "ETS", "fotowoltaika", "wiatraki", "atom", "REMIT", "bilansowanie"
+    ]
+
+    for (const t of coreTags) {
+        // Simple slugify
+        const slug = t.toLowerCase().replace(/ /g, '-').replace(/[ąćęłńóśźż]/g, c => ({ 'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n', 'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z' })[c] || c)
+
+        await prisma.newsTag.upsert({
+            where: { name: t },
+            update: {},
+            create: {
+                name: t,
+                slug: slug
+            }
+        })
+    }
+
+    // 7. Initialize default schedule
+    await prisma.newsIngestSchedule.create({
+        data: {
+            mode: "FIXED_TIMES",
+            fixedTimesMinutes: [390, 870], // 06:30, 14:30
+            timezone: "Europe/Warsaw"
+        }
+    }).catch(() => { /* Ignore logic if exists, schema doesn't have unique constraint but singleton logic will handle */ })
+
     console.log('Seeding finished.')
 }
 

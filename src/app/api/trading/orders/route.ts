@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { z } from "zod"
+import { calculateExposureLedger, validateOrderRisk, generateAdvisoryLockIds } from "@/lib/risk-engine"
 
 const orderSchema = z.object({
     instrument: z.string(),
@@ -36,14 +37,14 @@ export async function GET(req: Request) {
             take: 50
         })
 
-        // Map to simpler structure if needed, or return as is
         const mappedOrders = orders.map(o => ({
             id: o.id,
             instrument: o.product.symbol,
             side: o.side,
-            quantity: o.quantityMW ?? o.quantityPercent ?? 0, // Fallback
+            quantity: o.quantityMW ?? o.quantityPercent ?? 0,
             price: o.limitPrice,
             status: o.status,
+            filledMW: o.filledMW ?? 0,
             createdAt: o.createdAt
         }))
 
@@ -71,59 +72,126 @@ export async function POST(req: Request) {
 
         const { instrument, side, quantityType, quantity, limitPrice, validUntil } = result.data
 
-        // Logic:
-        // 1. Find Product by symbol 'instrument' (mock or real)
-        // 2. Check contract (skipped for MVP)
-        // 3. Create Order
+        // Determine profile from instrument (simple heuristic)
+        const profile = instrument.includes("PEAK") ? "PEAK" : "BASE"
 
-        // Find Product
-        let product = await prisma.product.findUnique({ where: { symbol: instrument } })
+        return await prisma.$transaction(async (tx) => {
+            // 1. ACQUIRE LOCK (Advisory Transaction Lock)
+            // Scope: Organization + Profile
+            // This ensures no other transaction can process orders for this profile concurrently.
+            const [lockKey1, lockKey2] = generateAdvisoryLockIds(session.user.organizationId!, profile)
 
-        if (!product) {
-            // Auto-create product for MVP if missing (dev mode only) or return error
-            // return NextResponse.json({ message: "Produkt nie istnieje" }, { status: 404 })
+            // Execute raw SQL to acquire lock. It releases automatically at end of transaction.
+            // Explicitly cast to int to match pg_advisory_xact_lock(int, int) signature
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockKey1}::int, ${lockKey2}::int)`
 
-            // Creating stub product for flow continuity
-            product = await prisma.product.create({
-                data: {
-                    symbol: instrument,
-                    profile: instrument.includes("PEAK") ? "PEAK" : "BASE",
-                    period: "YEAR", // mocked
-                    deliveryStart: new Date("2026-01-01"),
-                    deliveryEnd: new Date("2026-12-31")
+            // 2. Find/Verify Product
+            let product = await tx.product.findUnique({ where: { symbol: instrument } })
+
+            if (!product) {
+                // Auto-creation for MVP flow (safe inside lock)
+                product = await tx.product.create({
+                    data: {
+                        symbol: instrument,
+                        profile: profile,
+                        period: "YEAR", // Mock
+                        deliveryStart: new Date("2026-01-01"), // Mock
+                        deliveryEnd: new Date("2026-12-31")    // Mock
+                    }
+                })
+            }
+
+            const contracts = await tx.contract.findMany({
+                where: {
+                    organizationId: session.user.organizationId!,
+                    isActive: true,
+                    validTo: { gte: new Date() }
                 }
             })
-        }
 
-        // Create Order
-        const order = await prisma.order.create({
-            data: {
-                organizationId: session.user.organizationId,
-                userId: session.user.id,
-                productId: product.id,
-                side: side,
-                quantityMW: quantityType === "MW" ? quantity : 0, // Calculate if percent?
-                quantityPercent: quantityType === "PERCENT" ? quantity : null,
-                limitPrice: limitPrice,
-                status: "SUBMITTED",
-                validUntil: validUntil ? new Date(validUntil) : new Date(Date.now() + 24 * 60 * 60 * 1000), // Default 24h
+            if (!contracts.length) {
+                throw new Error("Brak aktywnej umowy")
             }
+
+            const isAllowedProduct = contracts.some(c => c.allowedProducts.includes(instrument))
+            if (!isAllowedProduct) {
+                throw new Error(`Produkt ${instrument} nie jest dozwolony w Twoich umowach`)
+            }
+
+            const aggregatedLimits: Record<string, number> = {}
+            contracts.forEach(c => {
+                const limits = (c as any).yearlyLimits as Record<string, number> | null
+                if (limits) {
+                    Object.entries(limits).forEach(([year, limit]) => {
+                        aggregatedLimits[year] = (aggregatedLimits[year] || 0) + Number(limit)
+                    })
+                }
+            })
+
+            // 4. Fetch Active Orders for Risk Calculation
+            const allActiveOrders = await tx.order.findMany({
+                where: {
+                    organizationId: session.user.organizationId!, // Non-null assertion safe due to checks above
+                    status: { in: ["SUBMITTED", "FILLED", "PARTIALLY_FILLED", "APPROVED", "IN_EXECUTION", "NEEDS_APPROVAL"] }
+                },
+                include: {
+                    product: { select: { symbol: true } }
+                }
+            })
+
+            // 5. Build Ledger & Validate
+            const ordersForRisk = allActiveOrders.map(o => ({
+                productId: o.product.symbol,
+                quantityMW: o.quantityMW || 0,
+                filledMW: o.filledMW || 0,
+                side: o.side,
+                status: o.status
+            }))
+
+            const currentLedger = calculateExposureLedger(ordersForRisk)
+            const validation = validateOrderRisk(
+                currentLedger,
+                { productId: instrument, quantityMW: quantity, side: side },
+                aggregatedLimits
+            )
+
+            if (!validation.ok) {
+                throw new Error(validation.error || "Błąd limitów handlowych")
+            }
+
+            // 6. Create Order
+            const newOrder = await tx.order.create({
+                data: {
+                    organizationId: session.user.organizationId!,
+                    userId: session.user.id!,
+                    productId: product.id,
+                    side: side,
+                    quantityMW: quantityType === "MW" ? quantity : 0,
+                    quantityPercent: quantityType === "PERCENT" ? quantity : null,
+                    limitPrice: limitPrice,
+                    status: "SUBMITTED",
+                    validUntil: validUntil ? new Date(validUntil) : new Date(Date.now() + 24 * 60 * 60 * 1000),
+                }
+            })
+
+            // 7. Log Audit
+            await tx.auditLog.create({
+                data: {
+                    userId: session.user.id!,
+                    action: "ORDER_CREATE",
+                    resource: `Order:${newOrder.id}`,
+                    details: { ...result.data, locking: "pg_advisory_xact_lock" }
+                }
+            })
+
+            return NextResponse.json({ message: "Zlecenie przyjęte", orderId: newOrder.id }, { status: 201 })
         })
 
-        // Log Audit
-        await prisma.auditLog.create({
-            data: {
-                userId: session.user.id,
-                action: "ORDER_CREATE",
-                resource: `Order:${order.id}`,
-                details: { ...result.data }
-            }
-        })
-
-        return NextResponse.json({ message: "Zlecenie przyjęte", orderId: order.id }, { status: 201 })
-
-    } catch (error) {
-        console.error(error)
-        return NextResponse.json({ message: "Wystąpił błąd serwera" }, { status: 500 })
+    } catch (error: any) {
+        console.error("Order processing error:", error)
+        // Differentiate expected business errors vs server errors
+        const msg = error.message || "Wystąpił błąd serwera"
+        const status = (msg.includes("limit") || msg.includes("pokrycia") || msg.includes("umowy")) ? 403 : 500
+        return NextResponse.json({ message: msg }, { status })
     }
 }

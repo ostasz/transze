@@ -29,7 +29,8 @@ export default async function TradingPage() {
             price: o.limitPrice,
             status: o.status,
             createdAt: o.createdAt,
-            validUntil: o.validUntil
+            validUntil: o.validUntil,
+            filledMW: o.filledMW ?? 0 // Map explicitly for the UI
         }))
     }
 
@@ -43,17 +44,10 @@ export default async function TradingPage() {
             {/* Main Content Grid */}
             <div className="flex flex-col gap-6">
 
-                {/* Top Section: Execution & Risk (Side-by-Side on large screens) */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    {/* Order Entry */}
-                    <div className="lg:col-span-7 xl:col-span-8 min-w-0">
-                        <OrderForm />
-                    </div>
-
-                    {/* Positions Widget */}
-                    <div className="lg:col-span-5 xl:col-span-4 min-w-0">
-                        <PositionsWidget />
-                    </div>
+                {/* Top Section: Execution & Risk */}
+                <div className="flex flex-col gap-6">
+                    <OrderForm />
+                    <PositionsWidget />
                 </div>
 
                 {/* Bottom Section: Active Orders Table (Full Width) */}

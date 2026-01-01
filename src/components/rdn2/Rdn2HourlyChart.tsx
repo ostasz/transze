@@ -44,91 +44,93 @@ export default function Rdn2HourlyChart({ data }: Rdn2HourlyChartProps) {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-[450px]">
-            <div className="flex justify-between items-center mb-6">
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-[450px] flex flex-col">
+            <div className="flex justify-between items-center mb-6 shrink-0">
                 <div>
                     <h2 className="text-lg font-bold text-gray-900">Przebieg godzinowy (Fixing I)</h2>
                     <p className="text-xs text-gray-500">Cena i wolumen w ujęciu godzinowym</p>
                 </div>
             </div>
 
-            <ResponsiveContainer width="100%" height="100%" minHeight={350}>
-                <ComposedChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis
-                        dataKey="hour"
-                        tick={{ fontSize: 11, fill: '#6B7280' }}
-                        axisLine={false}
-                        tickLine={false}
-                    />
-                    <YAxis
-                        yAxisId="left"
-                        orientation="left"
-                        tick={{ fontSize: 11, fill: '#6B7280' }}
-                        axisLine={false}
-                        tickLine={false}
-                        tickFormatter={(val: number) => val.toFixed(0)}
-                        width={40}
-                    />
-                    <YAxis
-                        yAxisId="right"
-                        orientation="right"
-                        tick={{ fontSize: 11, fill: '#6B7280' }}
-                        axisLine={false}
-                        tickLine={false}
-                        tickFormatter={(val: number) => (val / 1000).toFixed(1) + 'k'}
-                        width={40}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend verticalAlign="top" height={36} wrapperStyle={{ paddingBottom: '20px' }} />
+            <div className="flex-1 min-h-0 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                        <XAxis
+                            dataKey="hour"
+                            tick={{ fontSize: 11, fill: '#6B7280' }}
+                            axisLine={false}
+                            tickLine={false}
+                        />
+                        <YAxis
+                            yAxisId="left"
+                            orientation="left"
+                            tick={{ fontSize: 11, fill: '#6B7280' }}
+                            axisLine={false}
+                            tickLine={false}
+                            tickFormatter={(val: number) => val.toFixed(0)}
+                            width={40}
+                        />
+                        <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            tick={{ fontSize: 11, fill: '#6B7280' }}
+                            axisLine={false}
+                            tickLine={false}
+                            tickFormatter={(val: number) => (val / 1000).toFixed(1) + 'k'}
+                            width={40}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend verticalAlign="top" height={36} wrapperStyle={{ paddingBottom: '20px' }} />
 
-                    {/* Volume Bar */}
-                    <Bar
-                        yAxisId="right"
-                        dataKey="volume"
-                        name="Wolumen"
-                        fill="#334155"
-                        opacity={0.2}
-                        radius={[4, 4, 0, 0]}
-                        barSize={20}
-                    />
+                        {/* Volume Bar */}
+                        <Bar
+                            yAxisId="right"
+                            dataKey="volume"
+                            name="Wolumen"
+                            fill="#334155"
+                            opacity={0.2}
+                            radius={[4, 4, 0, 0]}
+                            barSize={20}
+                        />
 
-                    {/* Historical References */}
-                    <Line
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="priceAvgWeek"
-                        name="Średnia (7 dni)"
-                        stroke="#7C3AED"
-                        strokeWidth={2}
-                        dot={false}
-                        activeDot={false}
-                    />
-                    <Line
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="priceYesterday"
-                        name="Wczoraj"
-                        stroke="#F97316"
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
-                        dot={false}
-                        activeDot={false}
-                    />
+                        {/* Historical References */}
+                        <Line
+                            yAxisId="left"
+                            type="monotone"
+                            dataKey="priceAvgWeek"
+                            name="Średnia (7 dni)"
+                            stroke="#7C3AED"
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={false}
+                        />
+                        <Line
+                            yAxisId="left"
+                            type="monotone"
+                            dataKey="priceYesterday"
+                            name="Wczoraj"
+                            stroke="#F97316"
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                            dot={false}
+                            activeDot={false}
+                        />
 
-                    {/* Main Price Line */}
-                    <Line
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="price"
-                        name="Cena (PLN/MWh)"
-                        stroke="#134E4A"
-                        strokeWidth={4}
-                        dot={{ r: 4, fill: '#134E4A', strokeWidth: 0 }}
-                        activeDot={{ r: 6, strokeWidth: 0 }}
-                    />
-                </ComposedChart>
-            </ResponsiveContainer>
+                        {/* Main Price Line */}
+                        <Line
+                            yAxisId="left"
+                            type="monotone"
+                            dataKey="price"
+                            name="Cena (PLN/MWh)"
+                            stroke="#134E4A"
+                            strokeWidth={4}
+                            dot={{ r: 4, fill: '#134E4A', strokeWidth: 0 }}
+                            activeDot={{ r: 6, strokeWidth: 0 }}
+                        />
+                    </ComposedChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 }

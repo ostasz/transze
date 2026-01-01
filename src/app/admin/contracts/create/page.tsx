@@ -19,8 +19,11 @@ export default function CreateContractPage() {
         contractNumber: "",
         validFrom: "",
         validTo: "",
-        products: [] as string[]
+        products: [] as string[],
+        yearlyLimits: {} as Record<string, number>,
     })
+
+    const [selectedFamilies, setSelectedFamilies] = useState<string[]>([])
 
     useEffect(() => {
         // Fetch orgs
@@ -30,10 +33,43 @@ export default function CreateContractPage() {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
+
+        // Generate products based on families and yearly limits
+        const generatedProducts: string[] = []
+
+        Object.entries(formData.yearlyLimits).forEach(([year, limit]) => {
+            if (Number(limit) > 0) {
+                const yy = year.slice(-2)
+
+                if (selectedFamilies.includes("BASE_Y")) generatedProducts.push(`BASE_Y-${yy}`)
+                if (selectedFamilies.includes("PEAK_Y")) generatedProducts.push(`PEAK5_Y-${yy}`)
+
+                if (selectedFamilies.includes("BASE_Q")) {
+                    [1, 2, 3, 4].forEach(q => generatedProducts.push(`BASE_Q-${q}-${yy}`))
+                }
+                if (selectedFamilies.includes("PEAK_Q")) {
+                    [1, 2, 3, 4].forEach(q => generatedProducts.push(`PEAK5_Q-${q}-${yy}`))
+                }
+
+                if (selectedFamilies.includes("BASE_M")) {
+                    Array.from({ length: 12 }, (_, i) => i + 1).forEach(m => {
+                        const mm = m.toString().padStart(2, '0')
+                        generatedProducts.push(`BASE_M-${mm}-${yy}`)
+                    })
+                }
+                if (selectedFamilies.includes("PEAK_M")) {
+                    Array.from({ length: 12 }, (_, i) => i + 1).forEach(m => {
+                        const mm = m.toString().padStart(2, '0')
+                        generatedProducts.push(`PEAK5_M-${mm}-${yy}`)
+                    })
+                }
+            }
+        })
+
         try {
             await fetch("/api/admin/contracts", {
                 method: "POST",
-                body: JSON.stringify(formData)
+                body: JSON.stringify({ ...formData, products: generatedProducts })
             })
             router.push("/admin/contracts")
         } catch (e) {
@@ -43,13 +79,10 @@ export default function CreateContractPage() {
         }
     }
 
-    const toggleProduct = (p: string) => {
-        setFormData(prev => ({
-            ...prev,
-            products: prev.products.includes(p)
-                ? prev.products.filter(x => x !== p)
-                : [...prev.products, p]
-        }))
+    const toggleFamily = (f: string) => {
+        setSelectedFamilies(prev =>
+            prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]
+        )
     }
 
     return (
@@ -84,12 +117,36 @@ export default function CreateContractPage() {
                             </div>
                         </div>
                         <div>
-                            <Label>Dozwolone Produkty</Label>
+                            <Label>Limity Roczne (MW)</Label>
+                            <div className="grid grid-cols-4 gap-2 mt-2">
+                                {["2026", "2027", "2028", "2029"].map(year => (
+                                    <div key={year}>
+                                        <Label className="text-xs text-muted-foreground">Rok {year}</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="Limit"
+                                            value={(formData.yearlyLimits as any)?.[year] || ""}
+                                            onChange={e => setFormData({
+                                                ...formData,
+                                                yearlyLimits: { ...formData.yearlyLimits, [year]: Number(e.target.value) }
+                                            })}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <Label>Dozwolone Typy Produktów</Label>
+                            <p className="text-xs text-muted-foreground mb-2">Zaznacz typy, które będą dostępne dla lat z ustawionym limitem &gt; 0.</p>
                             <div className="grid grid-cols-2 gap-2 mt-2">
-                                {["BASE_Y_26", "PEAK_Y_26", "GAS_Y_26", "CO2_DEC25"].map(p => (
-                                    <div key={p} className="flex items-center space-x-2">
-                                        <Checkbox id={`prod-${p}`} onCheckedChange={() => toggleProduct(p)} />
-                                        <label htmlFor={`prod-${p}`}>{p}</label>
+                                {["BASE_Y", "PEAK_Y", "BASE_Q", "PEAK_Q", "BASE_M", "PEAK_M"].map(family => (
+                                    <div key={family} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`fam-${family}`}
+                                            onCheckedChange={() => toggleFamily(family)}
+                                            checked={selectedFamilies.includes(family)}
+                                        />
+                                        <label htmlFor={`fam-${family}`}>{family}</label>
                                     </div>
                                 ))}
                             </div>

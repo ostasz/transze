@@ -13,7 +13,8 @@ import {
     LogOut,
     FileText,
     Briefcase,
-    TrendingUp
+    TrendingUp,
+    ClipboardCheck
 } from "lucide-react"
 
 export function Sidebar() {
@@ -29,18 +30,6 @@ export function Sidebar() {
             roles: ["PROSPECT", "CLIENT_ADMIN", "CLIENT_TRADER", "CLIENT_VIEWER", "ADMIN", "BACKOFFICE", "TRADER", "RISK"],
         },
         {
-            href: "/dashboard",
-            label: "Dashboard",
-            icon: LayoutDashboard,
-            roles: ["CLIENT_ADMIN", "CLIENT_TRADER", "CLIENT_VIEWER"],
-        },
-        {
-            href: "/trading",
-            label: "Handel",
-            icon: Briefcase,
-            roles: ["CLIENT_ADMIN", "CLIENT_TRADER"],
-        },
-        {
             href: "/rdn2",
             label: "Analiza RDN",
             icon: Newspaper,
@@ -53,10 +42,28 @@ export function Sidebar() {
             roles: ["CLIENT_ADMIN", "CLIENT_TRADER", "CLIENT_VIEWER", "ADMIN", "BACKOFFICE", "TRADER", "RISK", "PROSPECT"],
         },
         {
+            href: "/dashboard",
+            label: "Dashboard",
+            icon: LayoutDashboard,
+            roles: ["CLIENT_ADMIN", "CLIENT_TRADER", "CLIENT_VIEWER"],
+        },
+        {
+            href: "/trading",
+            label: "Handel",
+            icon: Briefcase,
+            roles: ["CLIENT_ADMIN", "CLIENT_TRADER"],
+        },
+        {
             href: "/positions",
             label: "Pozycje",
             icon: FileText,
             roles: ["CLIENT_ADMIN", "CLIENT_TRADER", "CLIENT_VIEWER"],
+        },
+        {
+            href: "/admin/orders",
+            label: "Trade Desk",
+            icon: ClipboardCheck,
+            roles: ["ADMIN", "BACKOFFICE", "TRADER"],
         },
         {
             href: "/admin",

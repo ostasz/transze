@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,10 +15,18 @@ export default function CreateUserPage() {
         email: "",
         name: "",
         role: "CLIENT_TRADER",
-        organizationName: "", // Simplified: create org on fly or select? For MVP create new or type name
+        organizationName: "",
     })
     const [isLoading, setIsLoading] = useState(false)
     const [inviteLink, setInviteLink] = useState("")
+
+    const [orgs, setOrgs] = useState<any[]>([])
+
+    useEffect(() => {
+        fetch("/api/admin/organizations/list")
+            .then(res => res.json())
+            .then(data => setOrgs(data))
+    }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -99,13 +107,22 @@ export default function CreateUserPage() {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Nazwa Organizacji (lub NIP)</Label>
-                                <Input
-                                    placeholder="Ekovoltis Sp. z o.o."
+                                <Label>Organizacja</Label>
+                                <Select
                                     value={formData.organizationName}
-                                    onChange={e => setFormData({ ...formData, organizationName: e.target.value })}
-                                />
-                                <p className="text-xs text-muted-foreground">Jeśli organizacja nie istnieje, zostanie utworzona.</p>
+                                    onValueChange={v => setFormData({ ...formData, organizationName: v })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Wybierz organizację" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {orgs.map(org => (
+                                            <SelectItem key={org.id} value={org.name}>
+                                                {org.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 

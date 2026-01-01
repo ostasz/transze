@@ -14,7 +14,7 @@ model Organization {
   type      OrganizationType @default(CLIENT)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
-  contract  Contract?
+  contracts Contract[]
   orders    Order[]
   positions Position[]
   users     User[]
@@ -38,13 +38,15 @@ model User {
   ordersCreated        Order[]       @relation("CreatedOrders")
   sessions             Session[]
   organization         Organization? @relation(fields: [organizationId], references: [id])
+  newsBookmarks        NewsBookmark[]
 }
 
 model Contract {
   id              String       @id @default(cuid())
-  organizationId  String       @unique
+  organizationId  String
   allowShort      Boolean      @default(false)
   maxMWPerOrder   Float?
+  yearlyLimits    Json?
   contractNumber  String?
   validFrom       DateTime?
   validTo         DateTime?
@@ -124,16 +126,146 @@ model Position {
   @@unique([organizationId, productId])
 }
 
-model NewsItem {
-  id          String   @id @default(cuid())
-  title       String
-  summary     String
-  url         String
-  source      String
-  publishedAt DateTime
-  tags        String[]
-  createdAt   DateTime @default(now())
+// --- NEWS MODULE START ---
+
+model NewsSource {
+  id             String    @id @default(cuid())
+  name           String
+  type           NewsSourceType @default(RSS)
+  homepageUrl    String
+  feedUrl        String    @unique // To enforce uniqueness of sources
+  language       String    @default("pl")
+  country        String    @default("PL")
+  isActive       Boolean   @default(true)
+  allowImages    Boolean   @default(false)
+  trustLevel     Int       @default(50) // 0-100
+  priority       Int       @default(0) // Higher = more important for scoring
+  
+  // Status tracking
+  lastFetchedAt    DateTime?
+  lastFetchStatus  String? // OK, ERROR
+  lastFetchError   String? // Truncated error message
+  etag             String?
+  lastModified     String?
+  fetchIntervalMinutes Int? // Null = use global default
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  items          NewsItem[]
 }
+
+model NewsItem {
+  id             String    @id @default(cuid())
+  sourceId       String
+  title          String
+  url            String
+  canonicalUrl   String
+  urlHash        String    @unique // SHA256(canonicalUrl) for dedup
+  
+  publishedAt    DateTime? // From feed
+  fetchedAt      DateTime  @default(now())
+  
+  excerpt        String?   @db.VarChar(240) // Short plain text summary
+  excerptSource  String?   // "DESCRIPTION" | "CONTENT" | "meta"
+  
+  importance     Int       @default(0) // 0-100
+  baseScore      Int       @default(0) // Debug info
+  
+  isPinned       Boolean   @default(false)
+  isHidden       Boolean   @default(false)
+  
+  duplicateOfId  String?
+  duplicateOf    NewsItem? @relation("NewsDuplicates", fields: [duplicateOfId], references: [id])
+  duplicates     NewsItem[] @relation("NewsDuplicates")
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  source         NewsSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  tags           NewsTagOnItem[]
+  bookmarks      NewsBookmark[]
+
+  @@index([publishedAt])
+  @@index([importance(sort: Desc)])
+  @@index([sourceId])
+}
+
+model NewsTag {
+  id        String          @id @default(cuid())
+  name      String          @unique
+  slug      String          @unique
+  items     NewsTagOnItem[]
+}
+
+model NewsTagOnItem {
+  itemId    String
+  tagId     String
+  item      NewsItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tag       NewsTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([itemId, tagId])
+}
+
+model NewsBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item      NewsItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+}
+
+model NewsIngestSchedule {
+  id                    String   @id @default(cuid())
+  isEnabled             Boolean  @default(true)
+  timezone              String   @default("Europe/Warsaw")
+  mode                  ScheduleMode @default(FIXED_TIMES)
+  
+  // For FIXED_TIMES: minutes from midnight (e.g. 870 = 14:30)
+  fixedTimesMinutes     Int[]
+  
+  // For INTERVAL
+  intervalMinutes       Int?
+  
+  jitterMinutes         Int      @default(2)
+  minGapMinutes         Int      @default(30)
+  
+  lastRunAt             DateTime?
+  nextDueAt             DateTime?
+  
+  updatedAt             DateTime @updatedAt
+}
+
+model NewsIngestRun {
+  id             String   @id @default(cuid())
+  startedAt      DateTime @default(now())
+  finishedAt     DateTime?
+  status         String   // RUNNING, OK, ERROR, SKIPPED
+  reason         String?  // Why skipped or what happened
+  
+  itemsProcessed Int      @default(0)
+  sourcesFetched Int      @default(0)
+  errorMessage   String?
+  
+  createdAt      DateTime @default(now())
+}
+
+enum NewsSourceType {
+  RSS
+  API
+  MANUAL
+}
+
+enum ScheduleMode {
+  FIXED_TIMES
+  INTERVAL
+}
+
+// --- NEWS MODULE END ---
 
 model AuditLog {
   id        String   @id @default(cuid())

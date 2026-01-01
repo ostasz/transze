@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -22,10 +22,10 @@ const orderSchema = z.object({
     validUntil: z.string().optional(),
 })
 
-const AVAILABLE_PRODUCTS = ["BASE_Y_26", "BASE_Q3_25", "PEAK_Y_26", "GAS_Y_26"]
-
 export function OrderForm() {
     const [isLoading, setIsLoading] = useState(false)
+    const [availableProducts, setAvailableProducts] = useState<string[]>([])
+    const [loadingProducts, setLoadingProducts] = useState(true)
 
     const form = useForm<z.infer<typeof orderSchema>>({
         resolver: zodResolver(orderSchema) as any,
@@ -41,23 +41,47 @@ export function OrderForm() {
 
     const router = useRouter()
 
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const res = await fetch("/api/trading/products")
+                if (res.ok) {
+                    const data = await res.json()
+                    setAvailableProducts(data)
+                }
+            } catch (error) {
+                console.error("Failed to fetch products", error)
+            } finally {
+                setLoadingProducts(false)
+            }
+        }
+        fetchProducts()
+    }, [])
+
     async function onSubmit(values: z.infer<typeof orderSchema>) {
         setIsLoading(true)
+        const payload = {
+            ...values,
+            validUntil: values.validUntil ? new Date(values.validUntil).toISOString() : null
+        }
+
         try {
             const res = await fetch("/api/trading/orders", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(values),
+                body: JSON.stringify(payload),
             })
 
-            if (!res.ok) throw new Error("API Error")
+            const json = await res.json()
+
+            if (!res.ok) throw new Error(json.message || "API Error")
 
             // Successful submission
-            // alert("Zlecenie przyjęte do realizacji")
             form.reset()
             router.refresh() // Refresh server components (e.g. Orders Table)
-        } catch (e) {
-            alert("Błąd składania zlecenia. Sprawdź poprawność danych.")
+            window.dispatchEvent(new Event("trading:update")) // Notify widgets to refetch
+        } catch (e: any) {
+            alert(e.message || "Błąd składania zlecenia. Sprawdź poprawność danych.")
         } finally {
             setIsLoading(false)
         }
@@ -79,16 +103,18 @@ export function OrderForm() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Instrument</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingProducts}>
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Wybierz..." />
+                                                    <SelectValue placeholder={loadingProducts ? "Ładowanie..." : "Wybierz..."} />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {AVAILABLE_PRODUCTS.map(p => (
+                                                {availableProducts.length > 0 ? availableProducts.map(p => (
                                                     <SelectItem key={p} value={p}>{p}</SelectItem>
-                                                ))}
+                                                )) : (
+                                                    <div className="p-2 text-sm text-muted-foreground">Brak dostępnych produktów</div>
+                                                )}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />

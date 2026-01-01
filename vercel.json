@@ -3,6 +3,10 @@
         {
             "path": "/api/cron/import-email",
             "schedule": "0 7 * * *"
+        },
+        {
+            "path": "/api/cron/news-ingest",
+            "schedule": "*/15 * * * *"
         }
     ]
 }
