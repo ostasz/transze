@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client')
+import { PrismaClient } from '@prisma/client'
 // const bcrypt = require('bcryptjs') // Cannot use require if module type.
 // Using dynamic import or mock hash for seed simplicity in CommonJS env issues
 // Assuming environment supports it or we use hardcoded hash for 'password123'
