@@ -129,14 +129,24 @@ async function main() {
         })
     }
 
-    // 7. Initialize default schedule
-    await prisma.newsIngestSchedule.create({
-        data: {
-            mode: "FIXED_TIMES",
-            fixedTimesMinutes: [390, 870], // 06:30, 14:30
-            timezone: "Europe/Warsaw"
-        }
-    }).catch(() => { /* Ignore logic if exists, schema doesn't have unique constraint but singleton logic will handle */ })
+    // 7. Initialize default schedule (07:00, 13:00, 19:00)
+    const existingSchedule = await prisma.newsIngestSchedule.findFirst()
+    if (existingSchedule) {
+        await prisma.newsIngestSchedule.update({
+            where: { id: existingSchedule.id },
+            data: {
+                fixedTimesMinutes: [420, 780, 1140] // 07:00, 13:00, 19:00
+            }
+        })
+    } else {
+        await prisma.newsIngestSchedule.create({
+            data: {
+                mode: "FIXED_TIMES",
+                fixedTimesMinutes: [420, 780, 1140], // 07:00, 13:00, 19:00
+                timezone: "Europe/Warsaw"
+            }
+        })
+    }
 
     console.log('Seeding finished.')
 }
