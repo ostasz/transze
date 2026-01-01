@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, ProductProfile, ProductPeriod, NewsSourceType } from '@prisma/client'
 // const bcrypt = require('bcryptjs') // Cannot use require if module type.
 // Using dynamic import or mock hash for seed simplicity in CommonJS env issues
 // Assuming environment supports it or we use hardcoded hash for 'password123'
@@ -57,8 +57,8 @@ async function main() {
             update: {},
             create: {
                 symbol: p.symbol,
-                profile: p.profile,
-                period: p.period,
+                profile: p.profile as ProductProfile,
+                period: p.period as ProductPeriod,
                 deliveryStart: new Date(p.start),
                 deliveryEnd: new Date(p.end)
             }
@@ -101,7 +101,7 @@ async function main() {
             },
             create: {
                 name: s.name,
-                type: s.type, // Enum matching
+                type: s.type as NewsSourceType, // Enum matching
                 feedUrl: s.url,
                 homepageUrl: s.home,
                 trustLevel: s.trust,
