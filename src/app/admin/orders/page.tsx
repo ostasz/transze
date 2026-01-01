@@ -1,11 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { AdminOrdersTable } from "@/components/admin/orders-table"
+import { AdminOrdersTable, AdminOrder } from "@/components/admin/orders-table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function AdminOrdersPage() {
-    const [orders, setOrders] = useState([])
+    const [orders, setOrders] = useState<AdminOrder[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {

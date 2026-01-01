@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
 
-interface AdminOrder {
+export interface AdminOrder {
     id: string
     status: string
     quantityMW: number
