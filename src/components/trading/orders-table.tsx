@@ -22,7 +22,7 @@ interface Order {
 }
 
 interface OrdersTableProps {
-    orders: Order[]
+    orders?: Order[]
 }
 
 export function OrdersTable({ orders = [] }: OrdersTableProps) {
