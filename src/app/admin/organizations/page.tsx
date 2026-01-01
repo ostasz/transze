@@ -9,7 +9,10 @@ export default async function OrganizationsPage() {
     const orgs = await prisma.organization.findMany({
         include: {
             _count: { select: { users: true } },
-            contract: { select: { id: true, isActive: true } }
+            contracts: {
+                select: { id: true, isActive: true },
+                take: 1
+            }
         },
         orderBy: { createdAt: 'desc' }
     })
@@ -46,28 +49,31 @@ export default async function OrganizationsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {orgs.map((org) => (
-                                <TableRow key={org.id}>
-                                    <TableCell className="font-medium">{org.name}</TableCell>
-                                    <TableCell>{org.nip || "-"}</TableCell>
-                                    <TableCell>{org.type}</TableCell>
-                                    <TableCell>{org._count.users}</TableCell>
-                                    <TableCell>
-                                        {org.contract ? (
-                                            <span className={org.contract.isActive ? "text-green-600" : "text-red-500"}>
-                                                {org.contract.isActive ? "Aktywna" : "Nieaktywna"}
-                                            </span>
-                                        ) : (
-                                            <span className="text-muted-foreground">Brak</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Link href={`/admin/organizations/${org.id}`}>
-                                            <Button variant="outline" size="sm">Zarządzaj</Button>
-                                        </Link>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                            {orgs.map((org) => {
+                                const activeContract = org.contracts[0]
+                                return (
+                                    <TableRow key={org.id}>
+                                        <TableCell className="font-medium">{org.name}</TableCell>
+                                        <TableCell>{org.nip || "-"}</TableCell>
+                                        <TableCell>{org.type}</TableCell>
+                                        <TableCell>{org._count.users}</TableCell>
+                                        <TableCell>
+                                            {activeContract ? (
+                                                <span className={activeContract.isActive ? "text-green-600" : "text-red-500"}>
+                                                    {activeContract.isActive ? "Aktywna" : "Nieaktywna"}
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted-foreground">Brak</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Link href={`/admin/organizations/${org.id}`}>
+                                                <Button variant="outline" size="sm">Zarządzaj</Button>
+                                            </Link>
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })}
                         </TableBody>
                     </Table>
                 </CardContent>

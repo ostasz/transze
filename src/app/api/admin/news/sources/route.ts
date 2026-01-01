@@ -33,11 +33,6 @@ export async function POST(req: Request) {
             data: {
                 name: body.name,
                 type: body.type || "RSS",
-                url: body.feedUrl, // Schema mismatch? Schema says feedUrl. 'url' doesn't exist on NewsSource model in my definition? 
-                // Wait, in schema I defined `feedUrl` and `homepageUrl`.
-                // In seed I used `url` mapped to `feedUrl`.
-                // Let's check schema definition in Step 110.
-                // feedUrl String @unique
                 feedUrl: body.feedUrl,
                 homepageUrl: body.homepageUrl || "",
                 priority: body.priority || 0,
