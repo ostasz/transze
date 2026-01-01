@@ -39,27 +39,31 @@ export default async function TradingPage() {
             {/* Market Ticker (Replaces Cards) */}
             <MarketTicker />
 
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-                {/* Left Column: Order Entry (1/4) */}
-                <div className="xl:col-span-1 border-r pr-6">
-                    <OrderForm />
+            {/* Main Content Grid */}
+            <div className="flex flex-col gap-6">
+
+                {/* Top Section: Execution & Risk (Side-by-Side on large screens) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Order Entry */}
+                    <div className="lg:col-span-7 xl:col-span-8 min-w-0">
+                        <OrderForm />
+                    </div>
+
+                    {/* Positions Widget */}
+                    <div className="lg:col-span-5 xl:col-span-4 min-w-0">
+                        <PositionsWidget />
+                    </div>
                 </div>
 
-                {/* Right Column: Positions & Active Orders (3/4) */}
-                <div className="xl:col-span-3 space-y-6">
-                    {/* Positions */}
-                    <PositionsWidget />
-
-                    {/* Active Orders */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Twoje Zlecenia</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <OrdersTable orders={orders} />
-                        </CardContent>
-                    </Card>
-                </div>
+                {/* Bottom Section: Active Orders Table (Full Width) */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Twoje Zlecenia</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <OrdersTable orders={orders} />
+                    </CardContent>
+                </Card>
             </div>
         </div>
     )

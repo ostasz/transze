@@ -9,6 +9,7 @@ const orderSchema = z.object({
     quantityType: z.enum(["MW", "PERCENT"]),
     quantity: z.number(),
     limitPrice: z.number(),
+    validUntil: z.string().datetime().optional().nullable(),
 })
 
 export const dynamic = 'force-dynamic';
