@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 
-interface Order {
+export interface Order {
     id: string
     instrument: string
     side: "BUY" | "SELL"
@@ -19,6 +19,7 @@ interface Order {
     price: number
     status: string
     createdAt: Date | string
+    validUntil?: Date | string | null
 }
 
 interface OrdersTableProps {
@@ -36,7 +37,8 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
                         <TableHead>Wolumen (MW)</TableHead>
                         <TableHead>Cena (PLN)</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Data</TableHead>
+                        <TableHead>Data utworzenia</TableHead>
+                        <TableHead>Ważne do</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -54,11 +56,14 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
                             <TableCell className="text-xs text-muted-foreground">
                                 {order.createdAt ? format(new Date(order.createdAt), "dd.MM HH:mm") : "-"}
                             </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                                {order.validUntil ? format(new Date(order.validUntil), "dd.MM HH:mm") : "-"}
+                            </TableCell>
                         </TableRow>
                     ))}
                     {orders.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                            <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                                 Brak aktywnych zleceń. Złóż pierwsze zlecenie w formularzu obok.
                             </TableCell>
                         </TableRow>

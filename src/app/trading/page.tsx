@@ -28,7 +28,8 @@ export default async function TradingPage() {
             quantity: o.quantityMW ?? o.quantityPercent ?? 0,
             price: o.limitPrice,
             status: o.status,
-            createdAt: o.createdAt
+            createdAt: o.createdAt,
+            validUntil: o.validUntil
         }))
     }
 
