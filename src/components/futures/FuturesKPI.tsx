@@ -1,6 +1,7 @@
-
 import React from 'react';
 import { ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { Info } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface FutureData {
     date: string;
@@ -17,7 +18,7 @@ interface FuturesKPIProps {
 export default function FuturesKPI({ year, data, label, color }: FuturesKPIProps) {
     if (!data || data.length === 0) {
         return (
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-center text-gray-400">
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-center text-gray-400">
                 Brak danych dla {label}
             </div>
         );
@@ -49,7 +50,7 @@ export default function FuturesKPI({ year, data, label, color }: FuturesKPIProps
     const gradientId = `gradient-${year}`;
 
     return (
-        <div className={`bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group transition-colors ${color === 'teal' ? 'hover:border-teal-700' : color === 'orange' ? 'hover:border-orange-500' : 'hover:border-gray-300'}`}>
+        <div className={`bg-white p-4 md:p-6 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group transition-colors ${color === 'teal' ? 'hover:border-teal-700' : color === 'orange' ? 'hover:border-orange-500' : 'hover:border-gray-300'}`}>
             <div className="flex justify-between items-start z-10 relative">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -60,7 +61,7 @@ export default function FuturesKPI({ year, data, label, color }: FuturesKPIProps
                     </div>
 
                     <div className="flex items-baseline gap-2 mt-2">
-                        <span className="text-4xl font-bold text-gray-900 tracking-tight">
+                        <span className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
                             {price.toFixed(2)}
                         </span>
                         <span className="text-sm text-gray-400 font-medium">PLN/MWh</span>
@@ -72,10 +73,32 @@ export default function FuturesKPI({ year, data, label, color }: FuturesKPIProps
                     </div>
                 </div>
 
-                <div className="text-right space-y-1">
-                    <div className="text-xs text-gray-400">Min: <span className="text-gray-600 font-mono">{min.toFixed(2)}</span></div>
-                    <div className="text-xs text-gray-400">Max: <span className="text-gray-600 font-mono">{max.toFixed(2)}</span></div>
-                    <div className="text-xs text-gray-400">Śr: <span className="text-gray-600 font-mono">{avg.toFixed(2)}</span></div>
+                <div className="text-right">
+                    {/* Desktop View: Full Stats */}
+                    <div className="hidden md:block space-y-1">
+                        <div className="text-xs text-gray-400">Min: <span className="text-gray-600 font-mono">{min.toFixed(2)}</span></div>
+                        <div className="text-xs text-gray-400">Max: <span className="text-gray-600 font-mono">{max.toFixed(2)}</span></div>
+                        <div className="text-xs text-gray-400">Śr: <span className="text-gray-600 font-mono">{avg.toFixed(2)}</span></div>
+                    </div>
+
+                    {/* Mobile View: Popover */}
+                    <div className="md:hidden">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                                    <Info className="w-5 h-5" />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-40 bg-white p-3 shadow-xl border rounded-xl z-500" side="left" align="start">
+                                <div className="space-y-2 text-sm">
+                                    <h4 className="font-semibold text-gray-700 border-b pb-1 mb-1 text-xs uppercase tracking-wide">Statystyki</h4>
+                                    <div className="flex justify-between text-gray-500 text-xs"><span>Min:</span> <span className="font-mono text-gray-900 font-bold">{min.toFixed(2)}</span></div>
+                                    <div className="flex justify-between text-gray-500 text-xs"><span>Max:</span> <span className="font-mono text-gray-900 font-bold">{max.toFixed(2)}</span></div>
+                                    <div className="flex justify-between text-gray-500 text-xs"><span>Śr:</span> <span className="font-mono text-gray-900 font-bold">{avg.toFixed(2)}</span></div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
                 </div>
             </div>
 

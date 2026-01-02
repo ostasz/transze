@@ -10,6 +10,9 @@ import FuturesTechnicalKPI from '@/components/futures2/FuturesTechnicalKPI';
 import FuturesCandleChart from '@/components/futures2/FuturesCandleChart';
 import ForwardCurveChart from '@/components/futures2/ForwardCurveChart';
 import FuturesTicker from '@/components/futures2/FuturesTicker';
+import FuturesLandscapeToolbarCompact from '@/components/futures2/FuturesLandscapeToolbarCompact';
+import FuturesLandscapeControlsRow from '@/components/futures2/FuturesLandscapeControlsRow';
+import FuturesTickerMobileLandscape from '@/components/futures2/FuturesTickerMobileLandscape';
 
 export default function FuturesPage2() {
     const today = new Date().toISOString().split('T')[0];
@@ -83,47 +86,62 @@ export default function FuturesPage2() {
     const filteredHistory = filterData();
 
     return (
-        <div className="text-gray-100 font-sans p-6">
-            {/* Header */}
-            {/* Header */}
-            <header className="flex flex-col md:flex-row justify-between items-center mb-8 bg-[#1F2937] p-4 rounded-xl border border-gray-800 shadow-sm gap-4 sticky top-0 z-50">
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="bg-blue-500/10 p-2 rounded-lg text-blue-500">
-                        <span className="text-2xl">⚡</span>
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-bold text-white tracking-tight">Centrum Analiz Futures</h1>
-                        <p className="text-xs text-gray-400">Widok Zaawansowany (PRO)</p>
-                    </div>
-                </div>
 
-                {/* Integrated Controls */}
-                <div className="flex items-center gap-4">
-                    <FuturesHeader
-                        selectedContract={selectedContract}
-                        onContractChange={setSelectedContract}
-                        range={timeRange}
-                        onRangeChange={setTimeRange}
-                        selectedDate={selectedDate}
-                        onDateChange={setSelectedDate}
-                    />
+        <div className="text-gray-100 font-sans min-h-screen bg-[#111827]">
+            {/* LANDSCAPE: Compact Toolbar & Controls */}
+            <div className="hidden landscape:block sticky top-0 z-50 bg-[#1F2937] shadow-md">
+                <FuturesLandscapeToolbarCompact />
+                <FuturesLandscapeControlsRow
+                    selectedContract={selectedContract}
+                    onContractChange={setSelectedContract}
+                    range={timeRange}
+                    onRangeChange={setTimeRange}
+                    selectedDate={selectedDate}
+                    onDateChange={setSelectedDate}
+                />
+            </div>
 
-                    <div className="h-8 w-px bg-gray-700 mx-2 hidden md:block"></div>
-
-                    {/* View Toggle */}
-                    <div className="bg-gray-900 p-1 rounded-lg flex items-center border border-gray-700">
-                        <Link href="/futures" className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-colors">
-                            Simple
-                        </Link>
-                        <span className="px-3 py-1.5 rounded-md text-sm font-bold bg-[#009D8F] text-white shadow-sm cursor-default">
-                            Pro
-                        </span>
+            {/* PORTRAIT: Standard Header */}
+            <div className="landscape:hidden p-6 pb-0">
+                <header className="flex flex-col md:flex-row justify-between items-center mb-8 bg-[#1F2937] p-4 rounded-xl border border-gray-800 shadow-sm gap-4 sticky top-0 z-50">
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="bg-blue-500/10 p-2 rounded-lg text-blue-500">
+                            <span className="text-2xl">⚡</span>
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold text-white tracking-tight">Centrum Analiz Futures</h1>
+                            <p className="text-xs text-gray-400">Widok Zaawansowany (PRO)</p>
+                        </div>
                     </div>
-                </div>
-            </header>
+
+                    {/* Integrated Controls */}
+                    <div className="flex items-center gap-4">
+                        <FuturesHeader
+                            selectedContract={selectedContract}
+                            onContractChange={setSelectedContract}
+                            range={timeRange}
+                            onRangeChange={setTimeRange}
+                            selectedDate={selectedDate}
+                            onDateChange={setSelectedDate}
+                        />
+
+                        <div className="h-8 w-px bg-gray-700 mx-2 hidden md:block"></div>
+
+                        {/* View Toggle */}
+                        <div className="bg-gray-900 p-1 rounded-lg flex items-center border border-gray-700">
+                            <Link href="/futures" className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                                Simple
+                            </Link>
+                            <span className="px-3 py-1.5 rounded-md text-sm font-bold bg-[#009D8F] text-white shadow-sm cursor-default">
+                                Pro
+                            </span>
+                        </div>
+                    </div>
+                </header>
+            </div>
 
             {/* Main Content */}
-            <main className="space-y-6 pb-12">
+            <main className="space-y-6 pb-24 p-6 landscape:p-4 landscape:pb-[calc(48px+env(safe-area-inset-bottom))] landscape:pt-4">
                 {loading ? (
                     <div className="h-96 flex flex-col items-center justify-center gap-4">
                         <div className="w-12 h-12 border-4 border-blue-900 border-t-blue-500 rounded-full animate-spin"></div>
@@ -132,7 +150,13 @@ export default function FuturesPage2() {
                 ) : (
                     <>
                         {/* KPI SECTION */}
-                        {kpi && <FuturesAdvKPI data={kpi} contract={selectedContract} />}
+                        {kpi && (
+                            <FuturesAdvKPI
+                                data={kpi}
+                                contract={selectedContract}
+                                className="landscape:grid-cols-2 lg:landscape:grid-cols-4"
+                            />
+                        )}
 
                         {/* TECHNICAL INDICATORS */}
                         {technical && <FuturesTechnicalKPI data={technical} contract={selectedContract} />}
@@ -148,7 +172,12 @@ export default function FuturesPage2() {
                                 <ForwardCurveChart data={forwardCurve} />
                             </div>
                             <div>
-                                <FuturesTicker data={ticker} />
+                                <div className="landscape:hidden block">
+                                    <FuturesTicker data={ticker} />
+                                </div>
+                                <div className="hidden landscape:block">
+                                    <FuturesTickerMobileLandscape data={ticker} />
+                                </div>
                             </div>
                         </div>
                     </>

@@ -58,7 +58,7 @@ export default function FuturesCandleChart({ data, contract }: FuturesCandleChar
     }).filter(d => d.price > 0); // Extra safety: filter out completely dead points if any
 
     return (
-        <div className="bg-[#1F2937] rounded-xl p-6 border border-gray-800 shadow-lg">
+        <div className="bg-[#1F2937] rounded-xl p-6 landscape:p-2 border border-gray-800 shadow-lg">
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-white font-bold text-lg">Wykres Świecowy Kontraktu ({contract})</h3>
                 <div className="flex gap-4 text-xs font-mono">
@@ -81,7 +81,7 @@ export default function FuturesCandleChart({ data, contract }: FuturesCandleChar
             </div>
 
             {/* Price Chart */}
-            <div className="h-[350px] w-full" style={{ minHeight: '350px' }}>
+            <div className="h-[350px] landscape:h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart
                         data={chartData}
@@ -216,7 +216,7 @@ export default function FuturesCandleChart({ data, contract }: FuturesCandleChar
             </div>
 
             {/* Volume Chart */}
-            <div className="h-[120px] w-full mt-2" style={{ minHeight: '120px' }}>
+            <div className="h-[120px] landscape:h-[60px] w-full mt-2">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart
                         data={chartData}
