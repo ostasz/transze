@@ -17,7 +17,11 @@ import {
     ClipboardCheck
 } from "lucide-react"
 
-export function Sidebar() {
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
+    onNavigate?: () => void
+}
+
+export function Sidebar({ className, onNavigate }: SidebarProps) {
     const pathname = usePathname()
     const { data: session } = useSession()
     const role = session?.user?.role || "GUEST"
@@ -76,7 +80,7 @@ export function Sidebar() {
     const filteredLinks = links.filter((link) => link.roles.includes(role))
 
     return (
-        <div className="pb-12 w-64 border-r min-h-screen bg-card hidden md:block">
+        <div className={cn("pb-12 w-64 border-r min-h-screen bg-card", className)}>
             <div className="space-y-4 py-4">
                 <div className="px-3 py-2">
                     <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-primary">
@@ -89,6 +93,7 @@ export function Sidebar() {
                                 variant={pathname.startsWith(link.href) ? "secondary" : "ghost"}
                                 className={cn("w-full justify-start", pathname.startsWith(link.href) && "bg-secondary")}
                                 asChild
+                                onClick={onNavigate}
                             >
                                 <Link href={link.href}>
                                     <link.icon className="mr-2 h-4 w-4" />

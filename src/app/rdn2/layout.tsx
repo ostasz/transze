@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/layout/sidebar"
+import { MobileNav } from "@/components/layout/mobile-nav"
 
 export default function Rdn2Layout({
     children,
@@ -7,10 +8,13 @@ export default function Rdn2Layout({
 }) {
     return (
         <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 bg-[#F3F4F6] h-screen overflow-y-auto">
-                {children}
-            </main>
+            <Sidebar className="hidden lg:block w-64 shrink-0" />
+            <div className="flex-1 flex flex-col h-screen min-w-0">
+                <MobileNav />
+                <main className="flex-1 bg-[#F3F4F6] overflow-y-auto">
+                    {children}
+                </main>
+            </div>
         </div>
     )
 }
