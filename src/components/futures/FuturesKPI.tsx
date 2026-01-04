@@ -50,35 +50,35 @@ export default function FuturesKPI({ year, data, label, color }: FuturesKPIProps
     const gradientId = `gradient-${year}`;
 
     return (
-        <div className={`bg-white p-4 md:p-6 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group transition-colors ${color === 'teal' ? 'hover:border-teal-700' : color === 'orange' ? 'hover:border-orange-500' : 'hover:border-gray-300'}`}>
+        <div className={`bg-white p-3 md:p-5 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden group transition-colors ${color === 'teal' ? 'hover:border-teal-700' : color === 'orange' ? 'hover:border-orange-500' : 'hover:border-gray-300'}`}>
             <div className="flex justify-between items-start z-10 relative">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${color === 'teal' ? 'bg-teal-50 text-teal-700' : color === 'orange' ? 'bg-orange-50 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
                             {year}
                         </span>
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{label}</h3>
+                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</h3>
                     </div>
 
-                    <div className="flex items-baseline gap-2 mt-2">
-                        <span className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+                    <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
                             {price.toFixed(2)}
                         </span>
-                        <span className="text-sm text-gray-400 font-medium">PLN/MWh</span>
+                        <span className="text-xs text-gray-400 font-medium">PLN/MWh</span>
                     </div>
 
-                    <div className={`flex items-center mt-2 text-sm font-medium ${isPositive ? 'text-green-600' : change < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                    <div className={`flex items-center mt-1 text-xs font-medium ${isPositive ? 'text-green-600' : change < 0 ? 'text-red-600' : 'text-gray-500'}`}>
                         <span>{isPositive ? '↑' : change < 0 ? '↓' : '–'} {Math.abs(change).toFixed(2)}%</span>
-                        <span className="text-gray-400 font-normal ml-2 text-xs">vs wczoraj</span>
+                        <span className="text-gray-400 font-normal ml-2 text-[10px]">vs wczoraj</span>
                     </div>
                 </div>
 
                 <div className="text-right">
                     {/* Desktop View: Full Stats */}
-                    <div className="hidden md:block space-y-1">
-                        <div className="text-xs text-gray-400">Min: <span className="text-gray-600 font-mono">{min.toFixed(2)}</span></div>
-                        <div className="text-xs text-gray-400">Max: <span className="text-gray-600 font-mono">{max.toFixed(2)}</span></div>
-                        <div className="text-xs text-gray-400">Śr: <span className="text-gray-600 font-mono">{avg.toFixed(2)}</span></div>
+                    <div className="hidden md:block space-y-0.5">
+                        <div className="text-[10px] text-gray-400">Min: <span className="text-gray-600 font-mono">{min.toFixed(2)}</span></div>
+                        <div className="text-[10px] text-gray-400">Max: <span className="text-gray-600 font-mono">{max.toFixed(2)}</span></div>
+                        <div className="text-[10px] text-gray-400">Śr: <span className="text-gray-600 font-mono">{avg.toFixed(2)}</span></div>
                     </div>
 
                     {/* Mobile View: Popover */}
@@ -86,7 +86,7 @@ export default function FuturesKPI({ year, data, label, color }: FuturesKPIProps
                         <Popover>
                             <PopoverTrigger asChild>
                                 <button className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
-                                    <Info className="w-5 h-5" />
+                                    <Info className="w-4 h-4" />
                                 </button>
                             </PopoverTrigger>
                             <PopoverContent className="w-40 bg-white p-3 shadow-xl border rounded-xl z-500" side="left" align="start">
@@ -103,7 +103,7 @@ export default function FuturesKPI({ year, data, label, color }: FuturesKPIProps
             </div>
 
             {/* Sparkline Background */}
-            <div className="absolute bottom-0 left-0 right-0 h-24 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
                         <defs>

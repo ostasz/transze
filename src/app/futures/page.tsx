@@ -6,10 +6,12 @@ import FuturesKPICompact from '@/components/futures/FuturesKPICompact';
 import FuturesChart from '@/components/futures/FuturesChart';
 import { ArrowLeft, MonitorPlay } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { safeFormatDate, safeParseDate } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
+import ModeToggle from '@/components/futures/ModeToggle';
 
 interface FutureData {
     date: string;
@@ -23,6 +25,7 @@ interface FuturesResponse {
 }
 
 export default function FuturesPage() {
+    const router = useRouter();
     const [dataY1, setDataY1] = useState<FutureData[]>([]);
     const [dataY2, setDataY2] = useState<FutureData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -83,13 +86,13 @@ export default function FuturesPage() {
                     </div>
 
                     {/* View Toggle */}
-                    <div className="bg-gray-100 p-1 rounded-lg flex items-center border border-gray-200">
-                        <span className="px-3 py-1.5 rounded-md text-sm font-bold bg-white text-gray-900 shadow-sm cursor-default border border-gray-100">
-                            Simple
-                        </span>
-                        <Link href="/apps/futures2" className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
-                            Pro
-                        </Link>
+                    <div className="w-full md:w-auto flex justify-center">
+                        <ModeToggle
+                            value="basic"
+                            onChange={(val) => {
+                                if (val === 'pro') router.push('/apps/futures2');
+                            }}
+                        />
                     </div>
                 </header>
 
