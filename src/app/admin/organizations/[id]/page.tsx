@@ -20,6 +20,7 @@ export default async function OrganizationDetailsPage({ params }: PageProps) {
         where: { id },
         include: {
             users: true,
+            accountManager: true,
             contracts: {
                 orderBy: { createdAt: 'desc' }
             }
@@ -55,9 +56,9 @@ export default async function OrganizationDetailsPage({ params }: PageProps) {
                             type: organization.type,
                             addressRegistered: organization.addressRegistered,
                             addressCorrespondence: organization.addressCorrespondence,
-                            accountManagerName: organization.accountManagerName,
-                            accountManagerPhone: organization.accountManagerPhone,
-                            accountManagerEmail: organization.accountManagerEmail,
+                            accountManagerName: organization.accountManager?.name ?? null,
+                            accountManagerPhone: organization.accountManager?.phone ?? null,
+                            accountManagerEmail: organization.accountManager?.email ?? null,
                         }}
                     />
                 </div>
@@ -105,13 +106,13 @@ export default async function OrganizationDetailsPage({ params }: PageProps) {
                             <div className="col-span-2 font-semibold text-gray-900">Opiekun Ekovoltis</div>
 
                             <div className="font-medium text-muted-foreground">Imię i Nazwisko</div>
-                            <div>{organization.accountManagerName || "-"}</div>
+                            <div>{organization.accountManager?.name || "-"}</div>
 
                             <div className="font-medium text-muted-foreground">Telefon</div>
-                            <div>{organization.accountManagerPhone || "-"}</div>
+                            <div>{organization.accountManager?.phone || "-"}</div>
 
                             <div className="font-medium text-muted-foreground">Email</div>
-                            <div>{organization.accountManagerEmail || "-"}</div>
+                            <div>{organization.accountManager?.email || "-"}</div>
                         </div>
                     </CardContent>
                 </Card>
