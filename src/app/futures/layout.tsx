@@ -1,20 +1,4 @@
-import { Sidebar } from "@/components/layout/sidebar";
-import { MobileNav } from "@/components/layout/mobile-nav";
+import TerminalLayout from "@/app/terminal/layout";
 
-export default function FuturesLayout({
-    children,
-}: {
-    children: React.ReactNode
-}) {
-    return (
-        <div className="flex min-h-screen">
-            <Sidebar className="hidden lg:block w-64 shrink-0" />
-            <div className="flex-1 flex flex-col h-screen min-w-0">
-                <MobileNav />
-                <main className="flex-1 bg-gray-50 overflow-y-auto">
-                    {children}
-                </main>
-            </div>
-        </div>
-    );
-}
+export default TerminalLayout;
+

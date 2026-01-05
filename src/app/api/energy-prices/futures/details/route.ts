@@ -93,6 +93,20 @@ export async function GET(req: NextRequest) {
 
         console.log(`API: Fetching details for ${contract} (Refactored w/ Peak Logic)`);
 
+        // 1. GLOBAL LATEST DATE FINDER
+        // If no date provided, find the absolute latest date in the DB to ensure we show fresh data
+        // even if the specific 'contract' (default BASE_Y-2026) hasn't traded yet today.
+        let targetDateStr = dateStrParam;
+        if (!targetDateStr) {
+            const latestQuote = await prisma.futuresQuote.findFirst({
+                orderBy: { date: 'desc' },
+                select: { date: true }
+            });
+            if (latestQuote) {
+                targetDateStr = latestQuote.date.toISOString().split('T')[0];
+            }
+        }
+
         // 1. Get History for Contract (Main Chart Data)
         const historyData = await prisma.futuresQuote.findMany({
             where: { contract },
@@ -112,15 +126,20 @@ export async function GET(req: NextRequest) {
         }
 
         // 2. Identify "Last Session" (Target Date)
-        // If date param provided, try to find exact match, otherwise use last available.
-        let targetEntry = historyData[historyData.length - 1];
-        if (dateStrParam) {
-            // Safe helper to compare
-            const found = historyData.find(h => new Date(h.date).toISOString().split('T')[0] === dateStrParam);
-            if (found) targetEntry = found;
-        }
+        // If date param provided (or inferred as global latest), try to find exact match in history.
+        // If contract didn't trade on targetDate, we still want targetDate to be the global latest for Ticker generation.
 
-        const targetDate = new Date(targetEntry.date); // Ensure it's a Date object
+        let targetEntry = historyData[historyData.length - 1]; // Default to last available for this contract
+        const targetDate = new Date(targetDateStr!); // Use the global latest date we found/requested
+
+        // Try to find an entry for this specific contract on the target date
+        const foundEntry = historyData.find(h => new Date(h.date).toISOString().split('T')[0] === targetDateStr);
+        if (foundEntry) {
+            targetEntry = foundEntry;
+        }
+        // If NOT found, targetEntry remains the last traded date (e.g. 29.12), but targetDate is 31.12.
+        // This is important: KPIs might show older data (last trade), but Ticker will show 31.12.
+
         const previousEntry = historyData.find(h => {
             const d = new Date(h.date);
             return d < targetDate && d >= new Date(targetDate.getTime() - 7 * 24 * 60 * 60 * 1000);

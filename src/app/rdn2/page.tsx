@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { format, parseISO, subDays } from 'date-fns';
+import { format, parseISO, subDays, addDays } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import Rdn2KpiCards from '@/components/rdn2/Rdn2KpiCards';
 import Rdn2HourlyChart from '@/components/rdn2/Rdn2HourlyChart';
@@ -30,7 +30,13 @@ export default function Rdn2Page() {
                 if (!res.ok) throw new Error('Failed to fetch data');
 
                 const json = await res.json();
-                const fetchedHistory = json.fullHourlyHistory || [];
+                const rawHistory = json.fullHourlyHistory || [];
+
+                // Transform Quote Date -> Delivery Date (Quote + 1 Day)
+                const fetchedHistory = rawHistory.map((entry: any) => ({
+                    ...entry,
+                    date: format(addDays(parseISO(entry.date), 1), 'yyyy-MM-dd')
+                }));
 
                 if (fetchedHistory.length > 0) {
                     setHistory(fetchedHistory);

@@ -68,11 +68,11 @@ export default function FuturesPage() {
     const filteredDataY2 = dataY2.slice(-timeRange);
 
     return (
-        <div className="font-sans text-gray-900 bg-gray-50 min-h-screen">
+        <>
             {/* ========================================= */}
             {/* STANDARD LAYOUT (Portrait Mobile + Desktop) */}
             {/* ========================================= */}
-            <div className="block landscape:hidden lg:landscape:block p-4 md:p-6 pb-[calc(80px+env(safe-area-inset-bottom))]">
+            <div className="block landscape:hidden lg:landscape:block p-4 md:p-0 pb-[calc(80px+env(safe-area-inset-bottom))]">
                 {/* Header - Static, no flicker/sticky on mobile portrait */}
                 <header className="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm gap-4">
                     <div className="flex items-center gap-3 w-full md:w-auto">
@@ -149,7 +149,7 @@ export default function FuturesPage() {
             {/* ========================================= */}
             {/* MOBILE LANDSCAPE COMPACT LAYOUT */}
             {/* ========================================= */}
-            <div className="hidden landscape:flex lg:hidden flex-col h-[100dvh] w-full bg-white fixed inset-0 z-50 overflow-hidden pb-[48px] box-border safe-area-bottom">
+            <div className="hidden landscape:flex lg:landscape:hidden flex-col h-[100dvh] w-full bg-white fixed inset-0 z-50 overflow-hidden pb-[48px] box-border safe-area-bottom">
 
                 {/* 1. Thin Toolbar (Sticky) */}
                 <div className="h-10 border-b flex items-center px-4 justify-between bg-white shrink-0 shadow-sm z-30 relative">
@@ -167,27 +167,20 @@ export default function FuturesPage() {
                     </div>
                 </div>
 
-                {/* 2. Main Grid (Two Panel) */}
-                <div className="flex-1 grid grid-cols-[240px_1fr] overflow-hidden bg-white">
-
-                    {/* LEFT PANEL: Controls & KPIs */}
-                    <div className="border-r bg-gray-50/50 p-2 overflow-y-auto space-y-3 z-20 shadow-inner">
-                        <div className="space-y-2">
-                            <h3 className="text-[10px] font-bold text-gray-400 uppercase ml-1">Kluczowe Wskaźniki</h3>
-                            <FuturesKPICompact year={year1} data={filteredDataY1} label={`BASE ${year1}`} color="teal" />
-                            <FuturesKPICompact year={year2} data={filteredDataY2} label={`BASE ${year2}`} color="orange" />
-                        </div>
-
-                        <div className="space-y-2">
-                            <h3 className="text-[10px] font-bold text-gray-400 uppercase ml-1">Zakres Czasu</h3>
-                            <div className="grid grid-cols-3 gap-1">
+                {/* 2. Main Content (Single Panel) */}
+                <div className="flex-1 flex flex-col overflow-hidden bg-white">
+                    <div className="p-2 pb-0 flex flex-col gap-2 shrink-0">
+                        {/* Time Range Controls */}
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase shrink-0">Zakres:</span>
+                            <div className="flex gap-1.5 bg-gray-100 p-0.5 rounded-lg border border-gray-200">
                                 {[30, 90, 365].map((days) => (
                                     <button
                                         key={days}
                                         onClick={() => setTimeRange(days)}
-                                        className={`py-1.5 rounded-md text-[10px] font-bold transition-all border ${timeRange === days
-                                            ? 'bg-[#009D8F] text-white border-[#009D8F] shadow-sm'
-                                            : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-100'
+                                        className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${timeRange === days
+                                            ? 'bg-white text-[#009D8F] shadow-sm'
+                                            : 'text-gray-500 hover:text-gray-900'
                                             }`}
                                     >
                                         {days} Dni
@@ -195,16 +188,28 @@ export default function FuturesPage() {
                                 ))}
                             </div>
                         </div>
+
+                        {/* KPIs */}
+                        {loading ? (
+                            <div className="h-20 w-full flex items-center justify-center border rounded-lg bg-gray-50">
+                                <div className="w-5 h-5 border-2 border-gray-200 border-t-[#2DD4BF] rounded-full animate-spin"></div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-3">
+                                <FuturesKPICompact year={year1} data={filteredDataY1} label={`BASE ${year1}`} color="teal" />
+                                <FuturesKPICompact year={year2} data={filteredDataY2} label={`BASE ${year2}`} color="orange" />
+                            </div>
+                        )}
                     </div>
 
-                    {/* RIGHT PANEL: Chart Area */}
-                    <div className="relative w-full h-full p-2 pt-4 bg-white overflow-visible">
+                    {/* Chart Area */}
+                    <div className="flex-1 w-full min-h-0 relative p-2 pt-0">
                         {loading ? (
                             <div className="h-full w-full flex items-center justify-center">
                                 <div className="w-8 h-8 border-2 border-gray-200 border-t-[#2DD4BF] rounded-full animate-spin"></div>
                             </div>
                         ) : (
-                            <div className="w-full h-full relative">
+                            <div className="h-full w-full relative">
                                 <FuturesChart
                                     dataY1={filteredDataY1}
                                     dataY2={filteredDataY2}
@@ -215,8 +220,8 @@ export default function FuturesPage() {
                                     className="h-full w-full p-0 border-none shadow-none bg-transparent"
                                 />
 
-                                {/* Compact Legend Overlay */}
-                                <div className="absolute top-0 right-4 flex items-center gap-3 bg-white/80 backdrop-blur px-2 py-1 rounded-full border shadow-sm z-10 pointer-events-none">
+                                {/* Legend Overlay */}
+                                <div className="absolute top-2 right-4 flex items-center gap-3 bg-white/80 backdrop-blur px-2 py-1 rounded-full border shadow-sm z-10 pointer-events-none">
                                     <div className="flex items-center gap-1.5 text-[10px]">
                                         <div className="w-1.5 h-1.5 rounded-full bg-[#134E4A]"></div>
                                         <span className="font-semibold text-gray-700">{year1}</span>
@@ -231,6 +236,6 @@ export default function FuturesPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

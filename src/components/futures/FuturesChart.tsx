@@ -99,8 +99,8 @@ export default function FuturesChart({
                 </div>
             )}
 
-            <div className="flex-1 w-full min-h-0 relative">
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="flex-1 w-full min-h-0 relative" style={{ width: '100%', height: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%" minHeight={100}>
                     <LineChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                         <XAxis

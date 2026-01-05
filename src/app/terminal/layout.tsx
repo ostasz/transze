@@ -4,7 +4,7 @@ import { MobileNav } from "@/components/layout/mobile-nav"
 export default function TerminalLayout({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex min-h-screen w-full overflow-x-hidden">
-            <aside className="hidden lg:block w-64 shrink-0 border-r bg-card">
+            <aside className="hidden md:block w-64 shrink-0 border-r bg-card">
                 <Sidebar />
             </aside>
 

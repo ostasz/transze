@@ -172,11 +172,19 @@ export default function FuturesPage2() {
                                 <ForwardCurveChart data={forwardCurve} />
                             </div>
                             <div>
-                                <div className="landscape:hidden block">
+                                {/* Desktop: Ticker Table */}
+                                <div className="hidden lg:block">
                                     <FuturesTicker data={ticker} />
                                 </div>
-                                <div className="hidden landscape:block">
-                                    <FuturesTickerMobileLandscape data={ticker} />
+
+                                {/* Mobile: Ticker Table (Portrait) or Cards (Landscape) */}
+                                <div className="lg:hidden">
+                                    <div className="landscape:hidden block">
+                                        <FuturesTicker data={ticker} />
+                                    </div>
+                                    <div className="hidden landscape:block">
+                                        <FuturesTickerMobileLandscape data={ticker} />
+                                    </div>
                                 </div>
                             </div>
                         </div>

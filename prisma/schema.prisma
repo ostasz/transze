@@ -14,16 +14,38 @@ model Organization {
   type      OrganizationType @default(CLIENT)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
+
+  // Contact Info
+  addressRegistered      String?
+  addressCorrespondence  String?
+
+  // Account Manager Info
+  // Account Manager Info
+  accountManagerId       String?
+  accountManager         AccountManager?  @relation(fields: [accountManagerId], references: [id])
+
   contracts Contract[]
   orders    Order[]
   positions Position[]
   users     User[]
 }
 
+model AccountManager {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  phone         String
+  mobilePhone   String?
+  organizations Organization[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
 model User {
   id                   String        @id @default(cuid())
   email                String        @unique
   name                 String?
+  phoneNumber          String?
   passwordHash         String?
   role                 UserRole      @default(PROSPECT)
   isActive             Boolean       @default(false)

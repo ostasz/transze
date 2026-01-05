@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         // RBAC: Only Admin/Backoffice
         // if (!session || ...) 
 
-        const { email, name, role, organizationName } = await req.json()
+        const { email, name, role, organizationName, phoneNumber } = await req.json()
 
         // 1. Find or Create Organization
         let orgId = null
@@ -45,7 +45,8 @@ export async function POST(req: Request) {
             data: {
                 email,
                 name,
-                role,
+                phoneNumber,
+                role: role as any,
                 passwordHash, // Set temp
                 organizationId: orgId,
                 isActive: false, // Inactive

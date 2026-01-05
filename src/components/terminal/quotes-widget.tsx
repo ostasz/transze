@@ -78,7 +78,7 @@ export function QuotesWidget() {
         <Card className="h-full">
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>Notowania {dataDate ? `(${dataDate})` : ""}</CardTitle>
+                    <CardTitle>Notowania - Produkty Terminowe {dataDate ? `(${dataDate})` : ""}</CardTitle>
                 </div>
             </CardHeader>
             <CardContent>

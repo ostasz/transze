@@ -14,6 +14,7 @@ export default function CreateUserPage() {
     const [formData, setFormData] = useState({
         email: "",
         name: "",
+        phoneNumber: "",
         role: "CLIENT_TRADER",
         organizationName: "",
     })
@@ -83,6 +84,15 @@ export default function CreateUserPage() {
                                     type="text"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Telefon Komórkowy</Label>
+                                <Input
+                                    type="tel"
+                                    placeholder="+48 000 000 000"
+                                    value={formData.phoneNumber}
+                                    onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })}
                                 />
                             </div>
                         </div>

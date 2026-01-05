@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -15,20 +15,33 @@ import Link from "next/link"
 
 const formSchema = z.object({
     name: z.string().min(2, "Minimum 2 znaki"),
-    nip: z.string().optional(),
+    nip: z.string().min(10, "NIP jest wymagany"),
     type: z.enum(["CLIENT", "INTERNAL"]),
+    addressRegistered: z.string().min(1, "Adres siedziby jest wymagany"),
+    addressCorrespondence: z.string().min(1, "Adres korespondencyjny jest wymagany"),
+    accountManagerId: z.string().min(1, "Wybranie opiekuna jest wymagane"),
 })
 
 export default function CreateOrganizationPage() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
+    const [managers, setManagers] = useState<{ id: string, name: string }[]>([])
+
+    useEffect(() => {
+        fetch("/api/admin/account-managers")
+            .then(res => res.json())
+            .then(data => setManagers(data))
+    }, [])
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
             nip: "",
-            type: "CLIENT"
+            type: "CLIENT",
+            addressRegistered: "",
+            addressCorrespondence: "",
+            accountManagerId: "",
         }
     })
 
@@ -85,7 +98,7 @@ export default function CreateOrganizationPage() {
                                 name="nip"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>NIP (Opcjonalne)</FormLabel>
+                                        <FormLabel>NIP</FormLabel>
                                         <FormControl>
                                             <Input {...field} placeholder="000-000-00-00" />
                                         </FormControl>
@@ -115,6 +128,67 @@ export default function CreateOrganizationPage() {
                                     </FormItem>
                                 )}
                             />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                                <h3 className="col-span-full font-semibold text-sm text-muted-foreground">Dane Adresowe</h3>
+                                <FormField
+                                    control={form.control}
+                                    name="addressRegistered"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Adres Siedziby</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} placeholder="Ulica, Miasto, Kod" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="addressCorrespondence"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Adres Korespondencyjny</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} placeholder="Jeśli inny niż siedziby" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                                <h3 className="col-span-full font-semibold text-sm text-muted-foreground">Opiekun w Ekovoltis</h3>
+                                <FormField
+                                    control={form.control}
+                                    name="accountManagerId"
+                                    render={({ field }) => (
+                                        <FormItem className="col-span-full">
+                                            <FormLabel>Wybierz Opiekuna</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Wybierz opiekuna z listy" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {managers.map(manager => (
+                                                        <SelectItem key={manager.id} value={manager.id}>
+                                                            {manager.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                            <div className="text-xs text-muted-foreground mt-2">
+                                                Nie znalazłeś opiekuna? <Link href="/admin/account-managers/create" target="_blank" className="underline hover:text-primary">Dodaj nowego</Link>
+                                            </div>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
                             <Button type="submit" disabled={isLoading} className="w-full">
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
