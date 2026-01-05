@@ -35,6 +35,21 @@ export async function PUT(
 
         const { name, nip, type, addressRegistered, addressCorrespondence, accountManagerName, accountManagerPhone, accountManagerEmail } = result.data
 
+        // 1. Upsert Account Manager to ensure they exist and have latest details
+        const manager = await prisma.accountManager.upsert({
+            where: { email: accountManagerEmail },
+            update: {
+                name: accountManagerName,
+                phone: accountManagerPhone
+            },
+            create: {
+                name: accountManagerName,
+                email: accountManagerEmail,
+                phone: accountManagerPhone
+            }
+        })
+
+        // 2. Update Organization and connect manager
         const org = await prisma.organization.update({
             where: { id },
             data: {
@@ -43,9 +58,7 @@ export async function PUT(
                 type,
                 addressRegistered,
                 addressCorrespondence,
-                accountManagerName,
-                accountManagerPhone,
-                accountManagerEmail
+                accountManagerId: manager.id
             }
         })
 
