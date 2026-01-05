@@ -10,7 +10,7 @@ export default async function AdminLayout({
   const session = await auth()
   const role = session?.user?.role
 
-  if (role !== "ADMIN" && role !== "BACKOFFICE") {
+  if (role !== "ADMIN" && role !== "BACKOFFICE" && role !== "TRADER") {
     redirect("/")
   }
 

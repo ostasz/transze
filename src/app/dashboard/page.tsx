@@ -22,6 +22,12 @@ export default async function DashboardPage() {
         include: {
             product: {
                 select: { symbol: true }
+            },
+            createdByUser: {
+                select: {
+                    name: true,
+                    email: true
+                }
             }
         },
         orderBy: {
@@ -32,7 +38,7 @@ export default async function DashboardPage() {
 
     const orders: Order[] = dbOrders.map(o => ({
         id: o.id,
-        orderNumber: o.orderNumber || o.id.slice(0, 8), // Fallback for old orders
+        orderNumber: o.orderNumber || o.id.slice(0, 8),
         instrument: o.product.symbol,
         side: o.side,
         quantity: o.quantityMW ?? o.quantityPercent ?? 0,
@@ -40,7 +46,8 @@ export default async function DashboardPage() {
         status: o.status,
         filledMW: o.filledMW ?? 0,
         createdAt: o.createdAt,
-        validUntil: o.validUntil
+        validUntil: o.validUntil,
+        userName: o.createdByUser.name || o.createdByUser.email || "Nieznany"
     }))
 
     return (

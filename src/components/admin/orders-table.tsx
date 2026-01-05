@@ -36,6 +36,16 @@ interface AdminOrdersTableProps {
     initialOrders?: AdminOrder[]
 }
 
+const STATUS_MAP: Record<string, string> = {
+    SUBMITTED: "OCZEKUJE",
+    PARTIALLY_FILLED: "CZĘŚCIOWO",
+    NEEDS_APPROVAL: "DO AKCEPTACJI",
+    FILLED: "ZREALIZOWANE",
+    CANCELLED: "ANULOWANE",
+    REJECTED: "ODRZUCONE",
+    DRAFT: "SZKIC"
+}
+
 export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) {
     const [orders, setOrders] = useState<AdminOrder[]>(initialOrders)
     const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null)
@@ -153,7 +163,7 @@ export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) 
                                     </TableCell>
                                     <TableCell>{order.limitPrice.toFixed(2)} PLN</TableCell>
                                     <TableCell>
-                                        <Badge variant="outline">{order.status}</Badge>
+                                        <Badge variant="outline">{STATUS_MAP[order.status] || order.status}</Badge>
                                     </TableCell>
                                     <TableCell className="text-right space-x-2">
                                         <Button
@@ -190,7 +200,12 @@ export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) 
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {action === "FILL" ? "Realizacja zlecenia" : "Odrzucenie zlecenia"}
+                            {action === "FILL"
+                                ? "Realizacja zlecenia"
+                                : (selectedOrder?.filledMW && selectedOrder.filledMW > 0
+                                    ? "Zamknięcie reszty zlecenia"
+                                    : "Odrzucenie zlecenia")
+                            }
                         </DialogTitle>
                         <DialogDescription>
                             {selectedOrder?.product.symbol} | {selectedOrder?.organization.name}
@@ -218,7 +233,7 @@ export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) 
                                 />
                             </div>
                             <div className="text-xs text-muted-foreground text-right">
-                                Pozostało do realizacji: {(selectedOrder ? selectedOrder.quantityMW - selectedOrder.filledMW : 0).toFixed(3)} MW
+                                Pozostało do realizacji: {(selectedOrder ? selectedOrder.quantityMW - selectedOrder.filledMW : 0).toFixed(0)} MW
                             </div>
                         </div>
                     ) : (
@@ -242,7 +257,12 @@ export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) 
                             disabled={processing}
                         >
                             {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {action === "FILL" ? "Potwierdź realizację" : "Odrzuć zlecenie"}
+                            {action === "FILL"
+                                ? "Potwierdź realizację"
+                                : (selectedOrder?.filledMW && selectedOrder.filledMW > 0
+                                    ? "Zamknij resztę"
+                                    : "Odrzuć zlecenie")
+                            }
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -52,9 +52,12 @@ export async function PATCH(
                 }
 
                 // Execute cancellation
+                // Kill Remainder Logic: If partially filled, we close it as FILLED (keeping the filled valid), otherwise CANCELLED
+                const newStatus = order.filledMW > 0 ? "FILLED" : "CANCELLED"
+
                 const updated = await tx.order.update({
                     where: { id },
-                    data: { status: "CANCELLED" }
+                    data: { status: newStatus }
                 })
 
                 // Log Audit

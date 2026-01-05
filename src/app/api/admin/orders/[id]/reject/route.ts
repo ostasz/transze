@@ -27,7 +27,7 @@ export async function POST(
                 throw new Error("Order not found")
             }
 
-            if (!["SUBMITTED", "NEEDS_APPROVAL"].includes(order.status)) {
+            if (!["SUBMITTED", "NEEDS_APPROVAL", "PARTIALLY_FILLED"].includes(order.status)) {
                 throw new Error(`Cannot reject order in status ${order.status}`)
             }
 
@@ -36,9 +36,12 @@ export async function POST(
             const [lockKey1, lockKey2] = generateAdvisoryLockIds(order.organizationId, profile)
             await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockKey1}::int, ${lockKey2}::int)`
 
+            // Kill Remainder Logic: If partially filled, we close it as FILLED (keeping the filled valid), otherwise REJECTED
+            const newStatus = order.filledMW > 0 ? "FILLED" : "REJECTED"
+
             const updated = await tx.order.update({
                 where: { id },
-                data: { status: "REJECTED" }
+                data: { status: newStatus }
             })
 
             await tx.auditLog.create({

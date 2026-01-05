@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Loader2, ChevronsUpDown, Check, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -20,8 +20,8 @@ const orderSchema = z.object({
     instrument: z.string().min(1, "Wybierz produkt"),
     side: z.enum(["BUY", "SELL"]),
     quantityType: z.enum(["MW", "PERCENT"]),
-    quantity: z.coerce.number().min(0.1, "Minimum 0.1"),
-    limitPrice: z.coerce.number().min(0.01, "Cena wymagana"),
+    quantity: z.coerce.number().int("Liczba całkowita").min(1, "Minimum 1"),
+    limitPrice: z.coerce.number().min(0.01, "Cena wymagana").refine(val => Math.round(val * 100) / 100 === val, "Max 2 miejsca po przecinku"),
     validUntil: z.string().optional(),
 })
 
@@ -39,7 +39,7 @@ export function OrderForm() {
             quantityType: "MW",
             quantity: 0,
             limitPrice: 0,
-            validUntil: "",
+            validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
         },
     })
 
@@ -155,75 +155,76 @@ export function OrderForm() {
                             )}
                         />
 
-                        {/* Instrument Picker (Sheet Trigger) */}
-                        <FormField
-                            control={form.control}
-                            name="instrument"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel className="text-xs">Instrument</FormLabel>
-                                    <Sheet open={isInstrumentSheetOpen} onOpenChange={setInstrumentSheetOpen}>
-                                        <SheetTrigger asChild>
-                                            <FormControl>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    className={cn(
-                                                        "w-full justify-between h-10 text-left bg-background text-sm",
-                                                        !field.value && "text-muted-foreground"
-                                                    )}
-                                                >
-                                                    {field.value
-                                                        ? availableProducts.find(
-                                                            (product) => product === field.value
-                                                        ) || field.value
-                                                        : "Wybierz instrument"}
-                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                </Button>
-                                            </FormControl>
-                                        </SheetTrigger>
-                                        <SheetContent side="bottom" className="h-[50vh] rounded-t-xl">
-                                            <SheetHeader>
-                                                <SheetTitle>Wybierz Instrument</SheetTitle>
-                                            </SheetHeader>
-                                            <Command>
-                                                <CommandInput placeholder="Szukaj instrumentu..." />
-                                                <CommandList>
-                                                    <CommandEmpty>Nie znaleziono.</CommandEmpty>
-                                                    <CommandGroup>
-                                                        {availableProducts.map((product) => (
-                                                            <CommandItem
-                                                                value={product}
-                                                                key={product}
-                                                                onSelect={() => {
-                                                                    form.setValue("instrument", product)
-                                                                    setInstrumentSheetOpen(false)
-                                                                }}
-                                                            >
-                                                                <Check
-                                                                    className={cn(
-                                                                        "mr-2 h-4 w-4",
-                                                                        product === field.value
-                                                                            ? "opacity-100"
-                                                                            : "opacity-0"
-                                                                    )}
-                                                                />
-                                                                {product}
-                                                            </CommandItem>
-                                                        ))}
-                                                    </CommandGroup>
-                                                </CommandList>
-                                            </Command>
-                                        </SheetContent>
-                                    </Sheet>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        {/* Unified Row: Instrument, Quantity, Price, Date */}
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
 
-                        {/* Quantity Row */}
-                        <div className="grid grid-cols-12 gap-3 items-end">
-                            <div className="col-span-12 md:col-span-5">
+                            {/* Instrument (4 cols) */}
+                            <div className="col-span-1 md:col-span-4">
+                                <FormField
+                                    control={form.control}
+                                    name="instrument"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-col">
+                                            <FormLabel className="text-xs">Instrument</FormLabel>
+                                            <Popover open={isInstrumentSheetOpen} onOpenChange={setInstrumentSheetOpen}>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button
+                                                            variant="outline"
+                                                            role="combobox"
+                                                            className={cn(
+                                                                "w-full justify-between h-10 text-left bg-background text-sm",
+                                                                !field.value && "text-muted-foreground"
+                                                            )}
+                                                        >
+                                                            {field.value
+                                                                ? availableProducts.find(
+                                                                    (product) => product === field.value
+                                                                ) || field.value
+                                                                : "Wybierz instrument"}
+                                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-[300px] p-0" align="start">
+                                                    <Command>
+                                                        <CommandInput placeholder="Szukaj instrumentu..." />
+                                                        <CommandList>
+                                                            <CommandEmpty>Nie znaleziono.</CommandEmpty>
+                                                            <CommandGroup>
+                                                                {availableProducts.map((product) => (
+                                                                    <CommandItem
+                                                                        value={product}
+                                                                        key={product}
+                                                                        onSelect={() => {
+                                                                            form.setValue("instrument", product)
+                                                                            setInstrumentSheetOpen(false)
+                                                                        }}
+                                                                    >
+                                                                        <Check
+                                                                            className={cn(
+                                                                                "mr-2 h-4 w-4",
+                                                                                product === field.value
+                                                                                    ? "opacity-100"
+                                                                                    : "opacity-0"
+                                                                            )}
+                                                                        />
+                                                                        {product}
+                                                                    </CommandItem>
+                                                                ))}
+                                                            </CommandGroup>
+                                                        </CommandList>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Quantity (3 cols) */}
+                            <div className="col-span-1 md:col-span-3">
                                 <FormField
                                     control={form.control}
                                     name="quantity"
@@ -234,19 +235,19 @@ export function OrderForm() {
                                                 <FormControl>
                                                     <Input
                                                         type="number"
-                                                        step="0.1"
+                                                        step="1"
                                                         {...field}
                                                         value={field.value ?? ""}
                                                         onChange={e => field.onChange(e.target.value === "" ? "" : e.target.valueAsNumber)}
                                                         className="w-full h-10 text-base"
-                                                        placeholder="0.0"
+                                                        placeholder="0"
                                                     />
                                                 </FormControl>
                                                 <FormField
                                                     control={form.control}
                                                     name="quantityType"
                                                     render={({ field }) => (
-                                                        <FormItem className="min-w-[90px]">
+                                                        <FormItem className="min-w-[70px]">
                                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                                 <FormControl>
                                                                     <SelectTrigger className="h-10 text-sm">
@@ -268,9 +269,8 @@ export function OrderForm() {
                                 />
                             </div>
 
-                            {/* Price & Date Row (Landscape 2 cols, Portrait 1 col) */}
-                            <div className="col-span-12 md:col-span-7 grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 gap-3">
-                                {/* Price */}
+                            {/* Price (2 cols) */}
+                            <div className="col-span-1 md:col-span-2">
                                 <FormField
                                     control={form.control}
                                     name="limitPrice"
@@ -292,8 +292,10 @@ export function OrderForm() {
                                         </FormItem>
                                     )}
                                 />
+                            </div>
 
-                                {/* Valid Until */}
+                            {/* Valid Until (3 cols) */}
+                            <div className="col-span-1 md:col-span-3">
                                 <FormField
                                     control={form.control}
                                     name="validUntil"
