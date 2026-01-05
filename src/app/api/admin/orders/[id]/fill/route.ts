@@ -2,7 +2,10 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { z } from "zod"
+
 import { generateAdvisoryLockIds } from "@/lib/risk-engine"
+import { createOrderEventAndNotifications } from "@/lib/notifications"
+import { OrderEventType } from "@prisma/client"
 
 const fillSchema = z.object({
     price: z.number().positive(),
@@ -98,6 +101,19 @@ export async function POST(
                         price: price,
                         status: isFullyFilled ? "FILLED" : "PARTIALLY_FILLED"
                     }
+                }
+            })
+
+            // 6. Notifications
+            await createOrderEventAndNotifications(tx, {
+                orderId: id,
+                type: isFullyFilled ? OrderEventType.ORDER_FILLED : OrderEventType.ORDER_PARTIALLY_FILLED,
+                actorUserId: session.user.id!,
+                payload: {
+                    fillId: fill.id,
+                    volume: quantityMW,
+                    price: price,
+                    status: isFullyFilled ? "FILLED" : "PARTIALLY_FILLED"
                 }
             })
 

@@ -28,6 +28,7 @@ model Organization {
   orders    Order[]
   positions Position[]
   users     User[]
+  notifications Notification[]
 }
 
 model AccountManager {
@@ -61,6 +62,8 @@ model User {
   sessions             Session[]
   organization         Organization? @relation(fields: [organizationId], references: [id])
   newsBookmarks        NewsBookmark[]
+  notifications        Notification[]
+  orderEvents          OrderEvent[]
 }
 
 model Contract {
@@ -122,6 +125,7 @@ model Order {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   fills            Fill[]
+  events           OrderEvent[]
   organization     Organization @relation(fields: [organizationId], references: [id])
   product          Product      @relation(fields: [productId], references: [id])
   createdByUser    User         @relation("CreatedOrders", fields: [userId], references: [id])
@@ -409,4 +413,46 @@ enum OrderStatus {
   EXPIRED
   CANCELLED
   REJECTED
+}
+
+model OrderEvent {
+  id          String         @id @default(cuid())
+  orderId     String
+  type        OrderEventType
+  actorUserId String
+  payload     Json?
+  timestamp   DateTime       @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+  actor User  @relation(fields: [actorUserId], references: [id])
+
+  @@index([orderId])
+}
+
+model Notification {
+  id              String    @id @default(cuid())
+  recipientUserId String
+  organizationId  String
+  title           String
+  body            String
+  href            String?
+  createdAt       DateTime  @default(now())
+  readAt          DateTime?
+  dedupeKey       String?
+
+  recipient    User         @relation(fields: [recipientUserId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([recipientUserId, dedupeKey])
+  @@index([recipientUserId, readAt])
+}
+
+enum OrderEventType {
+  ORDER_CREATED
+  ORDER_CANCEL_REQUESTED
+  ORDER_CANCELLED_BY_CLIENT
+  ORDER_CANCELLED_BY_TRADER
+  ORDER_PARTIALLY_FILLED
+  ORDER_FILLED
+  ORDER_REJECTED
 }

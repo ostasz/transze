@@ -3,6 +3,8 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { generateAdvisoryLockIds } from "@/lib/risk-engine"
+import { createOrderEventAndNotifications } from "@/lib/notifications"
+import { OrderEventType } from "@prisma/client"
 
 export async function PATCH(
     req: Request,
@@ -68,6 +70,14 @@ export async function PATCH(
                         resource: `Order:${id}`,
                         details: { oldStatus: order.status, locking: "pg_advisory_xact_lock" }
                     }
+                })
+
+                // Notifications
+                await createOrderEventAndNotifications(tx, {
+                    orderId: id,
+                    type: OrderEventType.ORDER_CANCELLED_BY_CLIENT,
+                    actorUserId: session.user.id!,
+                    payload: { oldStatus: order.status, newStatus }
                 })
 
                 return NextResponse.json(updated)

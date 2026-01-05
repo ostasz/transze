@@ -14,8 +14,10 @@ import {
     FileText,
     Briefcase,
     TrendingUp,
-    ClipboardCheck
+    ClipboardCheck,
+    Bell
 } from "lucide-react"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     onNavigate?: () => void
@@ -35,7 +37,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
         },
         {
             href: "/rdn2",
-            label: "Analiza RDN",
+            label: "Rynek Dnia Nastepnego",
             icon: Newspaper,
             roles: ["CLIENT_ADMIN", "CLIENT_TRADER", "CLIENT_VIEWER", "ADMIN", "BACKOFFICE", "TRADER", "RISK", "PROSPECT"],
         },
@@ -83,9 +85,12 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
         <div className={cn("pb-12 w-64 border-r min-h-screen bg-card", className)}>
             <div className="space-y-4 py-4">
                 <div className="px-3 py-2">
-                    <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-primary">
-                        Ekovoltis Transze
-                    </h2>
+                    <div className="flex items-center justify-between mb-2 px-4">
+                        <h2 className="text-lg font-semibold tracking-tight text-primary">
+                            Ekovoltis
+                        </h2>
+                        <NotificationBell />
+                    </div>
                     <div className="space-y-1">
                         {filteredLinks.map((link) => (
                             <Button

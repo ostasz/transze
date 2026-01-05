@@ -9,6 +9,7 @@ import { Menu, User, LogOut } from "lucide-react"
 import { Sidebar } from "@/components/layout/sidebar"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 
 export function MobileNav() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -22,7 +23,7 @@ export function MobileNav() {
         if (pathname.startsWith("/terminal")) return "Terminal"
         if (pathname.startsWith("/positions")) return "Pozycje"
         if (pathname.startsWith("/futures")) return "Rynek Terminowy"
-        if (pathname.startsWith("/rdn2")) return "Analiza RDN"
+        if (pathname.startsWith("/rdn2")) return "Rynek Dnia Nastepnego"
         if (pathname.startsWith("/dashboard")) return "Dashboard"
         if (pathname.startsWith("/admin")) return "Administracja"
         return "Ekovoltis"
@@ -42,7 +43,8 @@ export function MobileNav() {
                 </div>
 
                 {/* Right: User Avatar Trigger */}
-                <div className="flex items-center">
+                <div className="flex items-center gap-2">
+                    <NotificationBell />
                     <Button variant="ghost" size="icon" className="-mr-2 rounded-full" onClick={() => setUserOpen(true)}>
                         <Avatar className="h-8 w-8">
                             <AvatarImage src={session?.user?.image || ""} />

@@ -2,7 +2,9 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { z } from "zod"
-import { calculateExposureLedger, validateOrderRisk, generateAdvisoryLockIds } from "@/lib/risk-engine"
+import { generateAdvisoryLockIds, calculateExposureLedger, validateOrderRisk } from "@/lib/risk-engine"
+import { createOrderEventAndNotifications } from "@/lib/notifications"
+import { OrderEventType } from "@prisma/client"
 
 const orderSchema = z.object({
     instrument: z.string(),
@@ -83,7 +85,7 @@ export async function POST(req: Request) {
 
             // Execute raw SQL to acquire lock. It releases automatically at end of transaction.
             // Explicitly cast to int to match pg_advisory_xact_lock(int, int) signature
-            await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockKey1}::int, ${lockKey2}::int)`
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockKey1}:: int, ${lockKey2}:: int)`
 
             // 2. Find/Verify Product
             let product = await tx.product.findUnique({ where: { symbol: instrument } })
@@ -100,6 +102,7 @@ export async function POST(req: Request) {
                     }
                 })
             }
+
 
             const contracts = await tx.contract.findMany({
                 where: {
@@ -190,9 +193,17 @@ export async function POST(req: Request) {
                 data: {
                     userId: session.user.id!,
                     action: "ORDER_CREATE",
-                    resource: `Order:${newOrder.id}`,
+                    resource: `Order:${newOrder.id} `,
                     details: { ...result.data, locking: "pg_advisory_xact_lock" }
                 }
+            })
+
+            // 8. Notifications
+            await createOrderEventAndNotifications(tx, {
+                orderId: newOrder.id,
+                type: OrderEventType.ORDER_CREATED,
+                actorUserId: session.user.id!,
+                payload: { orderNumber }
             })
 
             return NextResponse.json({ message: "Zlecenie przyjęte", orderId: newOrder.id }, { status: 201 })

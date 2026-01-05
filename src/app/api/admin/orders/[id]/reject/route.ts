@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { generateAdvisoryLockIds } from "@/lib/risk-engine"
+import { createOrderEventAndNotifications } from "@/lib/notifications"
+import { OrderEventType } from "@prisma/client"
 
 export async function POST(
     req: Request,
@@ -51,6 +53,14 @@ export async function POST(
                     resource: `Order:${id}`,
                     details: { reason }
                 }
+            })
+
+            // Notifications
+            await createOrderEventAndNotifications(tx, {
+                orderId: id,
+                type: OrderEventType.ORDER_REJECTED,
+                actorUserId: session.user.id!,
+                payload: { reason }
             })
 
             return NextResponse.json(updated)
