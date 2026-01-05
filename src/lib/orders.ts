@@ -1,5 +1,4 @@
-
-import { Prisma, OrderStatus, OrderEventType } from "@prisma/client"
+import { Prisma, OrderStatus, OrderEventType, PrismaClient } from "@prisma/client"
 import { createOrderEventAndNotifications } from "@/lib/notifications"
 
 /**
@@ -9,7 +8,7 @@ import { createOrderEventAndNotifications } from "@/lib/notifications"
  * Should be called within a transaction if possible, or with the raw prisma client.
  */
 export async function expireOverdueOrders(
-    tx: Prisma.TransactionClient | Prisma.Client,
+    tx: Prisma.TransactionClient | PrismaClient,
     organizationId: string
 ) {
     const now = new Date()
