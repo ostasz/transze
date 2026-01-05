@@ -8,6 +8,7 @@ import { Plus, User, Phone, Smartphone, Mail, Building } from "lucide-react"
 
 // Prism client instance (assuming it's available globally or imported)
 import { prisma } from "@/lib/prisma"
+import { EditAccountManagerDialog } from "@/components/admin/account-managers/edit-account-manager-dialog"
 
 export default async function AccountManagersListPage() {
     const managers = await prisma.accountManager.findMany({
@@ -88,8 +89,7 @@ export default async function AccountManagersListPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            {/* Future: Edit/Delete actions */}
-                                            <Button variant="ghost" size="sm" disabled>Szczegóły</Button>
+                                            <EditAccountManagerDialog manager={manager} />
                                         </TableCell>
                                     </TableRow>
                                 ))}

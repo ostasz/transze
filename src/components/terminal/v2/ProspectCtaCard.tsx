@@ -5,13 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Lock, CheckCircle2, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { isProspect } from "@/lib/mock/user";
 
-export function ProspectCtaCard() {
-    // In a real app, use useSession() here.
-    const showCta = isProspect();
+interface ProspectCtaCardProps {
+    isProspect?: boolean
+}
 
-    if (!showCta) return null;
+export function ProspectCtaCard({ isProspect = false }: ProspectCtaCardProps) {
+    if (!isProspect) return null;
 
     const lockedFeatures = [
         "Alerty cenowe i powiadomienia SMS",

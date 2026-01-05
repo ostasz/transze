@@ -182,7 +182,7 @@ export function OrderForm() {
                                                 </Button>
                                             </FormControl>
                                         </SheetTrigger>
-                                        <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
+                                        <SheetContent side="bottom" className="h-[50vh] rounded-t-xl">
                                             <SheetHeader>
                                                 <SheetTitle>Wybierz Instrument</SheetTitle>
                                             </SheetHeader>

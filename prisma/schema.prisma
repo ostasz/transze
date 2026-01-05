@@ -107,6 +107,7 @@ model Quote {
 
 model Order {
   id               String       @id @default(cuid())
+  orderNumber      String?      @unique
   organizationId   String
   userId           String
   productId        String

@@ -154,42 +154,56 @@ export function KpiSnapshotRow() {
 
     if (loading) return <div className="w-full text-center text-xs text-muted-foreground p-4">Ładowanie danych rynkowych...</div>;
 
+    // Compact Ticker Card
     const tickerContent = (
         <>
             {kpis.map((kpi, idx) => (
-                <Card key={`kpi-1-${idx}`} className="shrink-0 w-[240px] p-3 shadow-sm border-l-4 border-l-primary/20 hover:border-l-primary transition-colors cursor-default bg-white">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider truncate" title={kpi.label}>{kpi.label}</span>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-xl font-bold tracking-tight">{kpi.value.toFixed(2)}</span>
-                            <span className="text-xs text-muted-foreground font-medium">{kpi.unit}</span>
-                        </div>
-                        <div className={`flex items-center gap-1 text-xs font-semibold ${kpi.deltaPercent >= 0 ? 'text-green-600' : 'text-red-500'} `}>
+                <div
+                    key={`kpi-${idx}`}
+                    className="shrink-0 relative overflow-hidden rounded-full border bg-background/95 backdrop-blur-sm px-4 py-1.5 shadow-sm flex items-center gap-3 group hover:border-primary/50 transition-colors cursor-default"
+                >
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{kpi.label}</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold tabular-nums">{kpi.value.toFixed(2)}</span>
+
+                        <div className={`flex items-center gap-0.5 text-[10px] font-bold ${kpi.deltaPercent >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                             {kpi.deltaPercent >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
                             <span>{Math.abs(kpi.deltaPercent).toFixed(2)}%</span>
-                            {kpi.deltaAbsolute !== 0 && (
-                                <span className="text-muted-foreground/60 font-normal ml-0.5">
-                                    ({kpi.deltaAbsolute > 0 ? '+' : ''}{kpi.deltaAbsolute.toFixed(1)})
-                                </span>
-                            )}
                         </div>
                     </div>
-                </Card>
+                </div>
             ))}
         </>
     );
 
+    // Duplicate content enough times to ensure smooth scrolling even on wide screens
+    // Loop 4 times to be safe
+    const loopedContent = (
+        <>
+            {tickerContent}
+            {tickerContent}
+            {tickerContent}
+            {tickerContent}
+        </>
+    );
+
     return (
-        <div className="w-full space-y-2">
+        <div className="w-full space-y-2 select-none">
             <style jsx global>{`
-                @keyframes ticker {
+                @keyframes marquee {
                     0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
+                    100% { transform: translateX(-25%); } 
                 }
-                .animate-ticker {
-                    animation: ticker 40s linear infinite;
+                .animate-marquee {
+                    animation: marquee 60s linear infinite;
+                    will-change: transform;
+                }
+                .animate-marquee:hover {
+                    animation-play-state: paused;
                 }
             `}</style>
+
+            {/* If we render 4 blocks, moving by 1 block is 25%. Resetting at -25% snaps back to 0. Correct. */}
 
             <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -198,15 +212,13 @@ export function KpiSnapshotRow() {
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
-                    <span>Last updated: {lastUpdated}</span>
+                    <span>Aktualizacja: {lastUpdated}</span>
                 </div>
             </div>
 
             <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
-                <div className="flex w-max gap-4 animate-ticker hover:[animation-play-state:paused]">
-                    {/* Render twice for seamless loop */}
-                    {tickerContent}
-                    {tickerContent}
+                <div className="flex w-max gap-3 animate-marquee py-1">
+                    {loopedContent}
                 </div>
             </div>
         </div>

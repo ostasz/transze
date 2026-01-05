@@ -32,6 +32,7 @@ export default async function DashboardPage() {
 
     const orders: Order[] = dbOrders.map(o => ({
         id: o.id,
+        orderNumber: o.orderNumber || o.id.slice(0, 8), // Fallback for old orders
         instrument: o.product.symbol,
         side: o.side,
         quantity: o.quantityMW ?? o.quantityPercent ?? 0,

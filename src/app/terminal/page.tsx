@@ -1,6 +1,5 @@
 
-"use client";
-
+import { auth } from "@/lib/auth";
 import { KpiSnapshotRow } from "@/components/terminal/v2/KpiSnapshotRow";
 import { RdnSnapshotCard } from "@/components/terminal/v2/RdnSnapshotCard";
 import { FuturesTableV2 } from "@/components/terminal/v2/FuturesTableV2";
@@ -8,7 +7,13 @@ import { ProspectCtaCard } from "@/components/terminal/v2/ProspectCtaCard";
 import { AccountManagerCard } from "@/components/terminal/v2/AccountManagerCard";
 import { NewsWidgetV2 } from "@/components/terminal/v2/NewsWidgetV2";
 
-export default function TerminalV2Page() {
+export default async function TerminalV2Page() {
+    const session = await auth();
+    // Show CTA only if user has PROSPECT role (no contract)
+    // Cast to any to access role if types aren't fully set up yet
+    const userRole = (session?.user as any)?.role;
+    const isProspect = userRole === 'PROSPECT';
+
     return (
         <div className="space-y-4 p-4 md:p-0 h-full overflow-y-auto">
             {/* 1. Main Grid Layout - KPIs moved inside left col */}
@@ -43,7 +48,7 @@ export default function TerminalV2Page() {
 
                     {/* Prospect CTA (Conditional logic handled inside component, but layout space reserved) */}
                     <div className="w-full shrink-0">
-                        <ProspectCtaCard />
+                        <ProspectCtaCard isProspect={isProspect} />
                     </div>
 
                     {/* News Feed */}

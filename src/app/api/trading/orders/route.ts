@@ -159,9 +159,20 @@ export async function POST(req: Request) {
                 throw new Error(validation.error || "Błąd limitów handlowych")
             }
 
-            // 6. Create Order
+            // 6. Generate Custom Order Number
+            // Format: [K/S]-[NIP]-[DATE]-[INSTRUMENT]-[RANDOM]
+            const org = await tx.organization.findUnique({ where: { id: session.user.organizationId! } })
+            const nip = org?.nip || "UNKNOWN"
+            const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD
+            const sidePrefix = side === "BUY" ? "K" : "S"
+            const randomSuffix = Math.floor(10000 + Math.random() * 90000) // 5 digit random number
+
+            const orderNumber = `${sidePrefix}-${nip}-${dateStr}-${product.symbol}-${randomSuffix}`
+
+            // 7. Create Order
             const newOrder = await tx.order.create({
                 data: {
+                    orderNumber,
                     organizationId: session.user.organizationId!,
                     userId: session.user.id!,
                     productId: product.id,

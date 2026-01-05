@@ -27,6 +27,7 @@ export interface Order {
     status: string
     createdAt: Date | string
     validUntil?: Date | string | null
+    orderNumber?: string
 }
 
 interface OrdersTableProps {
@@ -96,7 +97,14 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
                             status === "REJECTED" ? "bg-red-100 text-red-800 border-red-200" :
                                 "bg-yellow-100 text-yellow-800 border-yellow-200"
             )}>
-                {status}
+                {status === "PARTIALLY_FILLED" ? "ZREALIZOWANE CZĘŚCIOWO" :
+                    status === "FILLED" ? "ZREALIZOWANE" :
+                        status === "CANCELLED" ? "ANULOWANE" :
+                            status === "REJECTED" ? "ODRZUCONE" :
+                                status === "SUBMITTED" ? "WYSŁANE" :
+                                    status === "NEEDS_APPROVAL" ? "DO AKCEPTACJI" :
+                                        status === "DRAFT" ? "SZKIC" :
+                                            status}
             </Badge>
         )
     }
@@ -126,6 +134,7 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead>Numer</TableHead>
                             <TableHead>Instrument</TableHead>
                             <TableHead>Strona</TableHead>
                             <TableHead>Wolumen</TableHead>
@@ -142,6 +151,9 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
 
                             return (
                                 <TableRow key={order.id} className={isCancelled ? "bg-muted/20" : ""}>
+                                    <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                                        {order.orderNumber}
+                                    </TableCell>
                                     <TableCell className={`font-medium ${cellClass}`}>{order.instrument}</TableCell>
                                     <TableCell className={isCancelled ? "opacity-60" : ""}>
                                         <Badge variant={order.side === "BUY" ? "default" : "destructive"} className={isCancelled ? "bg-gray-400 hover:bg-gray-400 border-transparent text-white" : ""}>
@@ -211,6 +223,9 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
 
                                 <div className="flex justify-between items-start mb-3">
                                     <div className="flex flex-col">
+                                        <span className="text-[10px] font-mono text-muted-foreground mb-0.5">
+                                            {order.orderNumber}
+                                        </span>
                                         <div className="flex items-center gap-2">
                                             <span className={cn("text-lg font-bold", isCancelled && "line-through text-muted-foreground")}>
                                                 {order.instrument}

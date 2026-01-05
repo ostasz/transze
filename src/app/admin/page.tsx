@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"
-import { Users, FileText, Shield, Database, Building2 } from "lucide-react"
+import { Users, FileText, Shield, Database, Building2, Briefcase } from "lucide-react"
 
 export default function AdminDashboard() {
     const cards = [
         { title: "Organizacje", desc: "Zarządzaj firmami i umowami", href: "/admin/organizations", icon: Building2 },
         { title: "Użytkownicy", desc: "Zarządzaj kontami i rolami", href: "/admin/users", icon: Users },
+        { title: "Opiekunowie", desc: "Zarządzaj opiekunami Ekovoltis", href: "/admin/account-managers", icon: Briefcase },
         { title: "Umowy i Kontrakty", desc: "Definiuj warunki handlowe", href: "/admin/contracts", icon: FileText },
         { title: "Audyt i Bezpieczeństwo", desc: "Przeglądaj logi systemowe", href: "/admin/audit", icon: Shield },
         { title: "Import Danych", desc: "Wgraj notowania (CSV)", href: "/admin/import", icon: Database },
