@@ -7,12 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const dynamic = 'force-dynamic'
 
+import { expireOverdueOrders } from "@/lib/orders"
+
 export default async function DashboardPage() {
     const session = await auth()
 
     if (!session?.user?.organizationId) {
         // Technically middleware should catch this, but safe fallback
         redirect("/login")
+    }
+
+    // Trigger auto-expiration on dashboard load
+    try {
+        await expireOverdueOrders(prisma, session.user.organizationId)
+    } catch (e) {
+        console.error("Dashboard auto-expire error:", e)
     }
 
     const dbOrders = await prisma.order.findMany({

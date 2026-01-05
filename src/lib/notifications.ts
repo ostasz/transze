@@ -101,6 +101,10 @@ export async function createOrderEventAndNotifications(
                 title = "Zlecenie odrzucone"
                 body = `Twoje zlecenie na ${order.product.symbol} zostało odrzucone. Powód: ${payload?.reason || 'Brak'}`
                 break
+            case "ORDER_EXPIRED":
+                title = "Zlecenie wygasło"
+                body = `Twoje zlecenie na ${order.product.symbol} wygasło i zostało automatycznie zamknięte.`
+                break
         }
     }
 

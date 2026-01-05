@@ -12,11 +12,10 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
+import { ArrowUpDown, Loader2 } from "lucide-react"
 
 export interface AdminOrder {
     id: string
@@ -30,6 +29,7 @@ export interface AdminOrder {
     organization: { name: string }
     product: { symbol: string }
     createdByUser: { email: string }
+    validUntil?: string | null
 }
 
 interface AdminOrdersTableProps {
@@ -43,13 +43,15 @@ const STATUS_MAP: Record<string, string> = {
     FILLED: "ZREALIZOWANE",
     CANCELLED: "ANULOWANE",
     REJECTED: "ODRZUCONE",
-    DRAFT: "SZKIC"
+    DRAFT: "SZKIC",
+    EXPIRED: "WYGASŁE"
 }
 
 export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) {
     const [orders, setOrders] = useState<AdminOrder[]>(initialOrders)
     const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null)
     const [action, setAction] = useState<"FILL" | "REJECT" | null>(null)
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null)
 
     // Form states
     const [fillPrice, setFillPrice] = useState<string>("")
@@ -57,6 +59,61 @@ export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) 
     const [reason, setReason] = useState<string>("")
     const [processing, setProcessing] = useState(false)
     const [open, setOpen] = useState(false)
+
+    // Sorting logic
+    const sortedOrders = [...orders].sort((a, b) => {
+        if (!sortConfig) return 0
+        const { key, direction } = sortConfig
+
+        let aValue: any = a
+        let bValue: any = b
+
+        // Handle nested keys
+        if (key === "organization.name") {
+            aValue = a.organization?.name
+            bValue = b.organization?.name
+        } else if (key === "product.symbol") {
+            aValue = a.product?.symbol
+            bValue = b.product?.symbol
+        } else if (key === "createdByUser.email") {
+            aValue = a.createdByUser?.email
+            bValue = b.createdByUser?.email
+        } else {
+            aValue = a[key as keyof AdminOrder]
+            bValue = b[key as keyof AdminOrder]
+        }
+
+        // Handle nulls/undefined
+        if (aValue === bValue) return 0
+        if (aValue === null || aValue === undefined) return 1
+        if (bValue === null || bValue === undefined) return -1
+
+        // Compare
+        if (aValue < bValue) return direction === "asc" ? -1 : 1
+        if (aValue > bValue) return direction === "asc" ? 1 : -1
+        return 0
+    })
+
+    const requestSort = (key: string) => {
+        let direction: "asc" | "desc" = "asc"
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
+            direction = "desc"
+        }
+        setSortConfig({ key, direction })
+    }
+
+    const SortableHead = ({ label, sortKey }: { label: string, sortKey: string }) => (
+        <TableHead>
+            <Button
+                variant="ghost"
+                onClick={() => requestSort(sortKey)}
+                className="h-8 -ml-4 px-3 data-[state=open]:bg-accent hover:bg-transparent"
+            >
+                {label}
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        </TableHead>
+    )
 
     // Reload orders helper
     const refreshOrders = async () => {
@@ -129,27 +186,30 @@ export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) 
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Data</TableHead>
-                            <TableHead>Klient</TableHead>
-                            <TableHead>Instrument</TableHead>
-                            <TableHead>Strona</TableHead>
-                            <TableHead>Wolumen</TableHead>
-                            <TableHead>Cena (Limit)</TableHead>
-                            <TableHead>Status</TableHead>
+                            <SortableHead label="Data Zlecenia" sortKey="createdAt" />
+                            <SortableHead label="Ważne do" sortKey="validUntil" />
+                            <SortableHead label="Klient" sortKey="organization.name" />
+                            <SortableHead label="Instrument" sortKey="product.symbol" />
+                            <SortableHead label="Strona" sortKey="side" />
+                            <SortableHead label="Wolumen" sortKey="quantityMW" />
+                            <SortableHead label="Cena (Limit)" sortKey="limitPrice" />
+                            <SortableHead label="Status" sortKey="status" />
                             <TableHead className="text-right">Akcje</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {orders.map((order) => {
-                            const remaining = order.quantityMW - order.filledMW
+                        {sortedOrders.map((order) => {
                             return (
                                 <TableRow key={order.id}>
                                     <TableCell className="text-xs text-muted-foreground">
                                         {format(new Date(order.createdAt), "dd.MM HH:mm")}
-                                        <div className="font-semibold text-foreground">{order.createdByUser.email.split('@')[0]}</div>
+                                        <div className="font-semibold text-foreground">{order.createdByUser?.email.split('@')[0]}</div>
                                     </TableCell>
-                                    <TableCell className="font-medium">{order.organization.name}</TableCell>
-                                    <TableCell>{order.product.symbol}</TableCell>
+                                    <TableCell className="text-xs text-muted-foreground">
+                                        {order.validUntil ? format(new Date(order.validUntil), "dd.MM HH:mm") : "-"}
+                                    </TableCell>
+                                    <TableCell className="font-medium">{order.organization?.name}</TableCell>
+                                    <TableCell>{order.product?.symbol}</TableCell>
                                     <TableCell>
                                         <Badge variant={order.side === "BUY" ? "default" : "destructive"}>
                                             {order.side === "BUY" ? "KUPNO" : "SPRZEDAŻ"}
@@ -187,7 +247,7 @@ export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) 
                         })}
                         {orders.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                     Brak oczekujących zleceń. Czas na kawę ☕️
                                 </TableCell>
                             </TableRow>
@@ -208,7 +268,7 @@ export function AdminOrdersTable({ initialOrders = [] }: AdminOrdersTableProps) 
                             }
                         </DialogTitle>
                         <DialogDescription>
-                            {selectedOrder?.product.symbol} | {selectedOrder?.organization.name}
+                            {selectedOrder?.product?.symbol} | {selectedOrder?.organization?.name}
                         </DialogDescription>
                     </DialogHeader>
 

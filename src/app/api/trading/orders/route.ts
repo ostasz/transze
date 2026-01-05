@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
@@ -5,6 +6,7 @@ import { z } from "zod"
 import { generateAdvisoryLockIds, calculateExposureLedger, validateOrderRisk } from "@/lib/risk-engine"
 import { createOrderEventAndNotifications } from "@/lib/notifications"
 import { OrderEventType } from "@prisma/client"
+import { expireOverdueOrders } from "@/lib/orders"
 
 const orderSchema = z.object({
     instrument: z.string(),
@@ -22,6 +24,13 @@ export async function GET(req: Request) {
         const session = await auth()
         if (!session?.user?.organizationId) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+        }
+
+        // Lazy cleanup of expired orders
+        try {
+            await expireOverdueOrders(prisma, session.user.organizationId)
+        } catch (e) {
+            console.error("Auto-expiry error in GET:", e)
         }
 
         const orders = await prisma.order.findMany({
@@ -47,7 +56,8 @@ export async function GET(req: Request) {
             price: o.limitPrice,
             status: o.status,
             filledMW: o.filledMW ?? 0,
-            createdAt: o.createdAt
+            createdAt: o.createdAt,
+            validUntil: o.validUntil
         }))
 
         return NextResponse.json(mappedOrders)
@@ -103,6 +113,9 @@ export async function POST(req: Request) {
                 })
             }
 
+            // 2.5 Auto-expire ANY overdue orders for this org before checking limits
+            // This ensures we don't block limits with dead orders
+            await expireOverdueOrders(tx, session.user.organizationId!)
 
             const contracts = await tx.contract.findMany({
                 where: {

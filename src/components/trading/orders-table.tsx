@@ -96,16 +96,18 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
                     status === "PARTIALLY_FILLED" ? "bg-blue-100 text-blue-800 border-blue-200" :
                         status === "CANCELLED" ? "bg-gray-100 text-gray-500 border-gray-200" :
                             status === "REJECTED" ? "bg-red-100 text-red-800 border-red-200" :
-                                "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                status === "EXPIRED" ? "bg-amber-100 text-amber-800 border-amber-200" :
+                                    "bg-yellow-100 text-yellow-800 border-yellow-200"
             )}>
                 {status === "PARTIALLY_FILLED" ? "ZREALIZOWANE CZĘŚCIOWO" :
                     status === "FILLED" ? "ZREALIZOWANE" :
                         status === "CANCELLED" ? "ANULOWANE" :
                             status === "REJECTED" ? "ODRZUCONE" :
-                                status === "SUBMITTED" ? "WYSŁANE" :
-                                    status === "NEEDS_APPROVAL" ? "DO AKCEPTACJI" :
-                                        status === "DRAFT" ? "SZKIC" :
-                                            status}
+                                status === "EXPIRED" ? "WYGASŁE" :
+                                    status === "SUBMITTED" ? "WYSŁANE" :
+                                        status === "NEEDS_APPROVAL" ? "DO AKCEPTACJI" :
+                                            status === "DRAFT" ? "SZKIC" :
+                                                status}
             </Badge>
         )
     }
@@ -142,6 +144,7 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
                             <TableHead>Status</TableHead>
                             <TableHead>Zlecający</TableHead>
                             <TableHead>Data</TableHead>
+                            <TableHead>Ważne do</TableHead>
                             <TableHead className="text-right">Akcje</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -174,6 +177,9 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
                                     <TableCell className={`text-xs text-muted-foreground ${isCancelled ? "line-through opacity-60" : ""}`}>
                                         {order.createdAt ? format(new Date(order.createdAt), "dd.MM HH:mm") : "-"}
                                     </TableCell>
+                                    <TableCell className={`text-xs text-muted-foreground ${isCancelled ? "line-through opacity-60" : ""}`}>
+                                        {order.validUntil ? format(new Date(order.validUntil), "dd.MM HH:mm") : "-"}
+                                    </TableCell>
                                     <TableCell className="text-right">
                                         {["SUBMITTED", "NEEDS_APPROVAL", "DRAFT"].includes(order.status) && (
                                             <Button
@@ -194,7 +200,7 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
                         })}
                         {sortedOrders.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                                     Brak zleceń pasujących do filtra.
                                 </TableCell>
                             </TableRow>
@@ -256,6 +262,10 @@ export function OrdersTable({ orders = [] }: OrdersTableProps) {
                                     <div className="text-right">
                                         <span className="text-xs text-muted-foreground block">Status</span>
                                         {renderStatusBadge(order.status)}
+                                    </div>
+                                    <div className="col-span-2 pt-2 border-t border-dashed">
+                                        <span className="text-xs text-muted-foreground block">Ważne do</span>
+                                        <div className="font-mono text-xs">{order.validUntil ? format(new Date(order.validUntil), "dd.MM.yyyy HH:mm") : "-"}</div>
                                     </div>
                                 </div>
 
